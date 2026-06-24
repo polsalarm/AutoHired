@@ -1,4 +1,10 @@
-import type { InterviewPrepResult, InterviewQuestion } from "../types.js";
+import type {
+  InterviewPrepResult,
+  InterviewQA,
+  InterviewQuestion,
+  InterviewScorecard,
+  InterviewTurnResult,
+} from "../types.js";
 import { callLLM, hasLLM, parseJson } from "./llm.js";
 
 interface PrepInput {
@@ -54,6 +60,156 @@ ${requirements.map((r) => `- ${r}`).join("\n") || "- (none captured)"}${profileB
     }));
   if (questions.length === 0) return prepWithTemplate(input);
   return { questions };
+}
+
+// ---------- Live (voice) mock interview ----------
+
+interface TurnInput extends PrepInput {
+  history: InterviewQA[];
+  maxQuestions?: number;
+}
+
+/**
+ * Drives one turn of a conversational mock interview: react to the candidate's
+ * last answer and ask the next question, or — once enough have been asked —
+ * return a final scorecard. Stateless; the client passes the full history each turn.
+ */
+export async function interviewTurn(input: TurnInput): Promise<InterviewTurnResult> {
+  const max = input.maxQuestions ?? 5;
+  const finished = input.history.length >= max;
+
+  if (finished) {
+    if (hasLLM()) {
+      try {
+        return await evaluateWithLLM(input);
+      } catch (err) {
+        console.warn("AI interview eval failed, using fallback:", (err as Error).message);
+      }
+    }
+    return evaluateFallback(input);
+  }
+
+  if (hasLLM()) {
+    try {
+      return await nextWithLLM(input);
+    } catch (err) {
+      console.warn("AI interview turn failed, using fallback:", (err as Error).message);
+    }
+  }
+  return nextFallback(input);
+}
+
+function transcript(history: InterviewQA[]): string {
+  if (history.length === 0) return "(no questions asked yet)";
+  return history
+    .map((qa, i) => `Q${i + 1}: ${qa.question}\nA${i + 1}: ${qa.answer || "(no answer)"}`)
+    .join("\n\n");
+}
+
+async function nextWithLLM(input: TurnInput): Promise<InterviewTurnResult> {
+  const { title, company, requirements, description, profile, history } = input;
+  const profileBlock = profile?.trim() ? `\n\nCandidate profile:\n${profile.slice(0, 2_000)}` : "";
+  const raw = await callLLM(
+    `You are a friendly but rigorous interviewer conducting a live mock interview for the role below. Based on the transcript so far, give brief constructive feedback on the candidate's MOST RECENT answer (empty string if none yet), then ask the NEXT question. Ask ONE question, conversational, spoken aloud — tailor it to the role, requirements, profile, and build naturally on their previous answers. Respond with ONLY JSON, no markdown fences:
+
+{ "feedback": string (1-2 sentences on the last answer, or ""), "nextQuestion": string (the next question to ask) }
+
+Role: ${title} at ${company}
+Role summary: ${description.slice(0, 1_200)}
+Key requirements:
+${requirements.map((r) => `- ${r}`).join("\n") || "- (none captured)"}${profileBlock}
+
+Transcript so far:
+${transcript(history)}`,
+    { maxTokens: 3_000 },
+  );
+  const parsed = parseJson<{ feedback?: string; nextQuestion?: string }>(raw);
+  const nextQuestion =
+    typeof parsed.nextQuestion === "string" && parsed.nextQuestion.trim()
+      ? parsed.nextQuestion.trim()
+      : nextFallback(input).nextQuestion;
+  return {
+    feedback: typeof parsed.feedback === "string" ? parsed.feedback.trim() : "",
+    nextQuestion,
+    done: false,
+    scorecard: null,
+  };
+}
+
+async function evaluateWithLLM(input: TurnInput): Promise<InterviewTurnResult> {
+  const { title, company, history } = input;
+  const raw = await callLLM(
+    `You are an interviewer scoring a completed mock interview for ${title} at ${company}. Evaluate the candidate from the full transcript. Be fair and specific. Respond with ONLY JSON, no markdown fences:
+
+{ "overall": number (0-100), "verdict": string (2-3 words, e.g. "Strong Candidate"), "summary": string (2-3 sentences of overall assessment), "strengths": string[] (2-4 things they did well), "improvements": string[] (2-4 concrete things to work on) }
+
+Transcript:
+${transcript(history)}`,
+    { maxTokens: 3_000 },
+  );
+  const parsed = parseJson<Partial<InterviewScorecard>>(raw);
+  return { feedback: "", nextQuestion: null, done: true, scorecard: normalizeScorecard(parsed) };
+}
+
+function normalizeScorecard(p: Partial<InterviewScorecard>): InterviewScorecard {
+  const overall = clampScore(p.overall);
+  return {
+    overall,
+    verdict: typeof p.verdict === "string" && p.verdict.trim() ? p.verdict.trim() : verdictForScore(overall),
+    summary: typeof p.summary === "string" ? p.summary.trim() : "",
+    strengths: strArr(p.strengths),
+    improvements: strArr(p.improvements),
+  };
+}
+
+/** Offline next-question fallback: walk the template questions by index. */
+function nextFallback(input: TurnInput): InterviewTurnResult {
+  const pool = prepWithTemplate(input).questions;
+  const q = pool[input.history.length % pool.length];
+  return {
+    feedback: input.history.length === 0 ? "" : "Good — be specific and back it up with a concrete example.",
+    nextQuestion: q.question,
+    done: false,
+    scorecard: null,
+  };
+}
+
+/** Offline scorecard fallback: rough heuristic from answer fullness. */
+function evaluateFallback(input: TurnInput): InterviewTurnResult {
+  const answers = input.history.filter((qa) => qa.answer.trim());
+  const avgWords =
+    answers.reduce((n, qa) => n + qa.answer.trim().split(/\s+/).length, 0) /
+    (answers.length || 1);
+  const overall = clampScore(40 + Math.min(40, avgWords * 1.5) + answers.length * 4);
+  return {
+    feedback: "",
+    nextQuestion: null,
+    done: true,
+    scorecard: {
+      overall,
+      verdict: verdictForScore(overall),
+      summary: `You answered ${answers.length} of ${input.history.length} questions. (Heuristic estimate — connect an AI provider for a detailed evaluation.)`,
+      strengths: answers.length ? ["Completed the interview", "Engaged with each question"] : [],
+      improvements: ["Use the STAR format", "Add specific, quantified examples", "Tie answers back to the role"],
+    },
+  };
+}
+
+function verdictForScore(score: number): string {
+  if (score >= 85) return "Strong Candidate";
+  if (score >= 70) return "Promising";
+  if (score >= 50) return "Needs Polish";
+  return "Keep Practicing";
+}
+
+function strArr(v: unknown): string[] {
+  return Array.isArray(v) ? v.filter((s): s is string => typeof s === "string") : [];
+}
+
+function clampScore(n: unknown): number {
+  const x = Math.round(Number(n));
+  if (Number.isNaN(x)) return 0;
+  return Math.max(0, Math.min(100, x));
 }
 
 const CATEGORIES = new Set(["behavioral", "technical", "role", "situational", "company"]);
