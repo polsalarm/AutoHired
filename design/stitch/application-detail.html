@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Application Detail &amp; AI Analysis</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed": "#0f0069",
+                      "tertiary": "#571ac0",
+                      "on-tertiary-fixed": "#23005c",
+                      "secondary-fixed": "#c9e6ff",
+                      "outline-variant": "#c7c4d8",
+                      "on-primary-fixed-variant": "#3323cc",
+                      "inverse-primary": "#c3c0ff",
+                      "outline": "#777587",
+                      "on-tertiary-fixed-variant": "#5516be",
+                      "surface-container-high": "#dee8ff",
+                      "primary-container": "#4f46e5",
+                      "primary-fixed": "#e2dfff",
+                      "surface-container-highest": "#d8e3fb",
+                      "surface-variant": "#d8e3fb",
+                      "on-primary": "#ffffff",
+                      "secondary": "#006591",
+                      "tertiary-fixed": "#e9ddff",
+                      "on-secondary-fixed": "#001e2f",
+                      "inverse-on-surface": "#ecf1ff",
+                      "secondary-container": "#39b8fd",
+                      "on-surface": "#111c2d",
+                      "primary-fixed-dim": "#c3c0ff",
+                      "tertiary-container": "#6f3dd9",
+                      "surface": "#f9f9ff",
+                      "on-secondary-fixed-variant": "#004c6e",
+                      "surface-tint": "#4d44e3",
+                      "on-surface-variant": "#464555",
+                      "secondary-fixed-dim": "#89ceff",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "inverse-surface": "#263143",
+                      "error": "#ba1a1a",
+                      "on-primary-container": "#dad7ff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-container": "#004666",
+                      "surface-container": "#e7eeff",
+                      "surface-bright": "#f9f9ff",
+                      "surface-container-low": "#f0f3ff",
+                      "on-error-container": "#93000a",
+                      "on-error": "#ffffff",
+                      "tertiary-fixed-dim": "#d0bcff",
+                      "primary": "#3525cd",
+                      "on-background": "#111c2d",
+                      "background": "#f9f9ff",
+                      "error-container": "#ffdad6",
+                      "surface-dim": "#cfdaf2",
+                      "on-tertiary-container": "#e3d5ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-xl": "64px",
+                      "stack-sm": "8px",
+                      "gutter": "16px",
+                      "stack-lg": "32px",
+                      "container-margin": "20px",
+                      "stack-md": "16px",
+                      "unit": "4px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "label-md": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "display-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Custom styles for details/summary */
+        details > summary {
+            list-style: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        /* Ambient Shadow Level 1 */
+        .shadow-level-1 {
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased min-h-screen pb-24 md:pb-10 font-body-md flex flex-col items-center">
+<!-- Mobile Top Header (Detail View specific, replacing standard TopAppBar) -->
+<header class="sticky top-0 w-full z-40 bg-surface/90 backdrop-blur-md flex justify-between items-center h-16 px-container-margin max-w-7xl">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-container transition-colors text-on-surface-variant active:opacity-70">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex-1 text-center pr-10">
+<h1 class="text-label-md font-label-md text-on-surface">Software Engineer Intern</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant">@ Google</p>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="w-full max-w-3xl px-container-margin mt-stack-md flex flex-col gap-stack-lg">
+<!-- Header Section (Desktop optimized, visible on all) -->
+<section class="flex items-center gap-gutter">
+<div class="w-16 h-16 rounded-xl bg-white shadow-level-1 flex items-center justify-center overflow-hidden shrink-0 border border-surface-container-high">
+<div class="w-full h-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center text-primary font-bold text-xl">G</div>
+</div>
+<div>
+<h2 class="text-headline-md font-headline-md text-on-surface">Software Engineer Intern</h2>
+<p class="text-body-lg font-body-lg text-on-surface-variant">Google • Mountain View, CA</p>
+</div>
+</section>
+<!-- Feasibility Score Section -->
+<section class="bg-primary-container text-on-primary-container rounded-xl p-container-margin shadow-level-1 relative overflow-hidden flex flex-col sm:flex-row items-center gap-gutter">
+<div class="absolute -right-10 -top-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+<!-- Circular Progress Indicator -->
+<div class="relative w-20 h-20 shrink-0">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 100 100">
+<circle cx="50" cy="50" fill="transparent" r="45" stroke="rgba(255,255,255,0.2)" stroke-width="8"></circle>
+<circle class="text-on-primary-container" cx="50" cy="50" fill="transparent" r="45" stroke="currentColor" stroke-dasharray="282.7" stroke-dashoffset="22.6" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center flex-col">
+<span class="text-label-md font-label-md font-bold">92%</span>
+</div>
+</div>
+<div class="flex-1 text-center sm:text-left z-10">
+<h3 class="text-body-lg font-body-lg font-bold mb-1">Excellent Match</h3>
+<p class="text-body-md font-body-md opacity-90">Strong candidate based on your profile, but lacks direct Python experience mentioned in requirements.</p>
+</div>
+</section>
+<!-- Actionable Suggestions Card -->
+<section class="bg-surface-container-lowest rounded-xl p-container-margin shadow-level-1 border border-surface-container">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+</div>
+<h3 class="text-body-lg font-body-lg font-semibold text-on-surface">AI Resume Suggestions</h3>
+</div>
+<ul class="space-y-3">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary mt-0.5" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-body-md font-body-md text-on-surface-variant">Highlight your React projects, particularly the dashboard application.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary mt-0.5" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-body-md font-body-md text-on-surface-variant">Add Python to your skills section if you have basic familiarity.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary mt-0.5" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-body-md font-body-md text-on-surface-variant">Mention your 1st place hackathon experience prominently.</span>
+</li>
+</ul>
+</section>
+<!-- Role Details Accordion -->
+<section class="flex flex-col gap-stack-sm">
+<!-- Job Description -->
+<details class="bg-surface-container-lowest rounded-xl shadow-level-1 border border-surface-container group overflow-hidden" open="">
+<summary class="flex justify-between items-center p-container-margin cursor-pointer select-none hover:bg-surface-container-low transition-colors">
+<h3 class="text-label-md font-label-md text-on-surface">Job Description</h3>
+<span class="material-symbols-outlined text-on-surface-variant transition-transform group-open:rotate-180">expand_more</span>
+</summary>
+<div class="px-container-margin pb-container-margin text-body-md font-body-md text-on-surface-variant pt-2 border-t border-surface-container-low">
+<p class="mb-3">Join our dynamic team to build the next generation of web applications. You will be working closely with senior engineers to design, develop, test, and deploy scalable software solutions.</p>
+<p>Responsibilities include participating in code reviews, writing automated tests, and collaborating with cross-functional teams to define product requirements.</p>
+</div>
+</details>
+<!-- Requirements -->
+<details class="bg-surface-container-lowest rounded-xl shadow-level-1 border border-surface-container group overflow-hidden">
+<summary class="flex justify-between items-center p-container-margin cursor-pointer select-none hover:bg-surface-container-low transition-colors">
+<h3 class="text-label-md font-label-md text-on-surface">Requirements</h3>
+<span class="material-symbols-outlined text-on-surface-variant transition-transform group-open:rotate-180">expand_more</span>
+</summary>
+<div class="px-container-margin pb-container-margin text-body-md font-body-md text-on-surface-variant pt-2 border-t border-surface-container-low">
+<ul class="list-disc pl-5 space-y-2">
+<li>Currently pursuing a BS/MS in Computer Science or related field.</li>
+<li>Strong proficiency in JavaScript, HTML, and CSS.</li>
+<li>Experience with modern frameworks like React or Angular.</li>
+<li>Familiarity with backend languages (e.g., Python, Java, or Node.js).</li>
+<li>Excellent problem-solving skills and attention to detail.</li>
+</ul>
+</div>
+</details>
+</section>
+<!-- Action Area (Floating or at bottom of content) -->
+<div class="mt-4 mb-8">
+<button class="w-full bg-primary hover:bg-on-primary-fixed-variant text-on-primary font-label-md text-label-md py-3 rounded-lg shadow-level-2 transition-all active:scale-95 flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-sm">send</span>
+                Apply Now
+            </button>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<!-- Applying Shared Components JSON specifically, active state on 'Vault' to represent 'Application detail/tracking' -->
+<nav class="md:hidden bg-surface dark:bg-surface-dim text-primary dark:text-primary-fixed text-label-sm font-label-sm text-headline-md font-headline-md text-primary fixed bottom-0 w-full z-50 shadow-lg flex justify-around items-center h-16 px-container-margin pb-safe">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors scale-95 active:scale-90 transition-transform w-16 h-full rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">home</span>
+<span>Home</span>
+</a>
+<!-- Tasks -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors scale-95 active:scale-90 transition-transform w-16 h-full rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">checklist</span>
+<span>Tasks</span>
+</a>
+<!-- Vault (Active State) -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed font-bold relative after:content-[''] after:absolute after:top-0 after:w-8 after:h-1 after:bg-primary dark:after:bg-primary-fixed after:rounded-full hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors scale-95 active:scale-90 transition-transform w-16 h-full rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span>Vault</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors scale-95 active:scale-90 transition-transform w-16 h-full rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">person</span>
+<span>Profile</span>
+</a>
+</nav>
+</body></html>

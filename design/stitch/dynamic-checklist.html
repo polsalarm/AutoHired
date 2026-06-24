@@ -1,0 +1,257 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Application Tasks</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#0f0069",
+                        "tertiary": "#571ac0",
+                        "on-tertiary-fixed": "#23005c",
+                        "secondary-fixed": "#c9e6ff",
+                        "outline-variant": "#c7c4d8",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "inverse-primary": "#c3c0ff",
+                        "outline": "#777587",
+                        "on-tertiary-fixed-variant": "#5516be",
+                        "surface-container-high": "#dee8ff",
+                        "primary-container": "#4f46e5",
+                        "primary-fixed": "#e2dfff",
+                        "surface-container-highest": "#d8e3fb",
+                        "surface-variant": "#d8e3fb",
+                        "on-primary": "#ffffff",
+                        "secondary": "#006591",
+                        "tertiary-fixed": "#e9ddff",
+                        "on-secondary-fixed": "#001e2f",
+                        "inverse-on-surface": "#ecf1ff",
+                        "secondary-container": "#39b8fd",
+                        "on-surface": "#111c2d",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "tertiary-container": "#6f3dd9",
+                        "surface": "#f9f9ff",
+                        "on-secondary-fixed-variant": "#004c6e",
+                        "surface-tint": "#4d44e3",
+                        "on-surface-variant": "#464555",
+                        "secondary-fixed-dim": "#89ceff",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#263143",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#dad7ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#004666",
+                        "surface-container": "#e7eeff",
+                        "surface-bright": "#f9f9ff",
+                        "surface-container-low": "#f0f3ff",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#d0bcff",
+                        "primary": "#3525cd",
+                        "on-background": "#111c2d",
+                        "background": "#f9f9ff",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#cfdaf2",
+                        "on-tertiary-container": "#e3d5ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-xl": "64px",
+                        "stack-sm": "8px",
+                        "gutter": "16px",
+                        "stack-lg": "32px",
+                        "container-margin": "20px",
+                        "stack-md": "16px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #F9FAFB; /* Level 0 Background */
+        }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        
+        /* Checkbox Customization */
+        .task-checkbox:checked + label .task-text {
+            text-decoration: line-through;
+            color: #777587; /* text-outline */
+        }
+        .task-checkbox:checked + label .check-icon-container {
+            background-color: #4f46e5; /* primary-container */
+            border-color: #4f46e5;
+        }
+        .task-checkbox:checked + label .check-icon {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="text-on-surface antialiased flex flex-col min-h-screen">
+<!-- TopAppBar (Hidden on Mobile, Visible on md+) -->
+<header class="hidden md:flex justify-between items-center h-16 px-container-margin max-w-full sticky top-0 w-full z-50 bg-surface dark:bg-surface-dim">
+<div class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed hover:opacity-80 transition-opacity active:opacity-70 cursor-pointer">
+            AutoHired
+        </div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:opacity-80 transition-opacity active:opacity-70" data-icon="notifications">notifications</span>
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined text-sm" data-icon="person">person</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 px-container-margin pt-stack-lg pb-stack-xl md:max-w-screen-xl md:mx-auto w-full md:pb-stack-lg">
+<div class="mb-stack-lg">
+<h1 class="text-headline-lg-mobile font-headline-lg-mobile md:text-headline-lg md:font-headline-lg text-on-surface">Application Tasks</h1>
+<p class="text-body-md font-body-md text-on-surface-variant mt-unit">Stay on top of your ongoing applications.</p>
+</div>
+<!-- Task Bento Grid -->
+<div class="flex flex-col gap-stack-lg">
+  <section>
+    <h2 class="text-label-md font-label-md text-primary uppercase tracking-wider mb-stack-md">Today</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+      <!-- Company Card: Google -->
+      <div class="bg-on-primary rounded-xl p-5 shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1),_0_2px_4px_-2px_rgb(0_0_0_/_0.1)] flex flex-col gap-stack-md">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-surface-variant flex items-center justify-center overflow-hidden">
+              <span class="text-label-md font-label-md text-primary">GO</span>
+            </div>
+            <div>
+              <h2 class="text-body-lg font-body-lg font-bold text-on-surface">Google</h2>
+              <p class="text-label-sm font-label-sm text-on-surface-variant">Software Engineering Intern</p>
+            </div>
+          </div>
+          <span class="px-2 py-1 bg-surface-container-high text-primary rounded-full text-[10px] font-bold uppercase tracking-wider">Assessment</span>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div class="relative flex items-start group">
+            <input class="task-checkbox peer sr-only" id="task-g1" type="checkbox">
+            <label class="flex items-start gap-3 cursor-pointer w-full" for="task-g1">
+              <div class="check-icon-container w-5 h-5 rounded border-2 border-outline-variant flex items-center justify-center mt-0.5 transition-colors group-hover:border-primary-container">
+                <span class="material-symbols-outlined text-[14px] text-white opacity-0 check-icon transition-opacity" data-icon="check" style="font-variation-settings: 'wght' 600;">check</span>
+              </div>
+              <span class="task-text text-body-md font-body-md text-on-surface transition-colors mt-[-2px]">Complete online assessment</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section>
+    <h2 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider mb-stack-md">Upcoming</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+      <!-- Company Card: Vercel -->
+      <div class="bg-on-primary rounded-xl p-5 shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1),_0_2px_4px_-2px_rgb(0_0_0_/_0.1)] flex flex-col gap-stack-md">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-surface-variant flex items-center justify-center overflow-hidden">
+              <span class="text-label-md font-label-md text-on-surface">VE</span>
+            </div>
+            <div>
+              <h2 class="text-body-lg font-body-lg font-bold text-on-surface">Vercel</h2>
+              <p class="text-label-sm font-label-sm text-on-surface-variant">Frontend Developer</p>
+            </div>
+          </div>
+          <span class="px-2 py-1 bg-[#f3e8ff] text-[#7e22ce] rounded-full text-[10px] font-bold uppercase tracking-wider">Applying</span>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div class="relative flex items-start group">
+            <input checked="" class="task-checkbox peer sr-only" id="task-v1" type="checkbox">
+            <label class="flex items-start gap-3 cursor-pointer w-full" for="task-v1">
+              <div class="check-icon-container w-5 h-5 rounded border-2 border-outline-variant flex items-center justify-center mt-0.5 transition-colors group-hover:border-primary-container">
+                <span class="material-symbols-outlined text-[14px] text-white opacity-0 check-icon transition-opacity" data-icon="check" style="font-variation-settings: 'wght' 600;">check</span>
+              </div>
+              <span class="task-text text-body-md font-body-md text-on-surface transition-colors mt-[-2px]">Write cover letter</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <!-- Company Card: Figma -->
+      <div class="bg-on-primary rounded-xl p-5 shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1),_0_2px_4px_-2px_rgb(0_0_0_/_0.1)] flex flex-col gap-stack-md">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-[#ffe6e6] flex items-center justify-center overflow-hidden">
+              <span class="text-label-md font-label-md text-[#ea4c89]">FI</span>
+            </div>
+            <div>
+              <h2 class="text-body-lg font-body-lg font-bold text-on-surface">Figma</h2>
+              <p class="text-label-sm font-label-sm text-on-surface-variant">Product Designer</p>
+            </div>
+          </div>
+          <span class="px-2 py-1 bg-surface-container-high text-primary rounded-full text-[10px] font-bold uppercase tracking-wider">Portfolio</span>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div class="relative flex items-start group">
+            <input class="task-checkbox peer sr-only" id="task-f1" type="checkbox">
+            <label class="flex items-start gap-3 cursor-pointer w-full" for="task-f1">
+              <div class="check-icon-container w-5 h-5 rounded border-2 border-outline-variant flex items-center justify-center mt-0.5 transition-colors group-hover:border-primary-container">
+                <span class="material-symbols-outlined text-[14px] text-white opacity-0 check-icon transition-opacity" data-icon="check" style="font-variation-settings: 'wght' 600;">check</span>
+              </div>
+              <span class="task-text text-body-md font-body-md text-on-surface transition-colors mt-[-2px]">Refine case study</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</main>
+<!-- BottomNavBar (Visible on Mobile, Hidden on md+) -->
+<nav class="md:hidden flex justify-around items-center h-16 px-container-margin pb-safe fixed bottom-0 w-full z-50 bg-surface dark:bg-surface-dim shadow-lg">
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors scale-95 active:scale-90 w-16 h-full rounded-lg">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="text-label-sm font-label-sm">Home</span>
+</button>
+<!-- Active Tab: Tasks -->
+<button class="flex flex-col items-center justify-center text-primary font-bold relative after:content-[''] after:absolute after:top-0 after:w-8 after:h-1 after:bg-primary after:rounded-full hover:bg-surface-container-low transition-colors scale-95 active:scale-90 w-16 h-full rounded-lg">
+<span class="material-symbols-outlined mb-1" data-icon="checklist" data-weight="fill" style="font-variation-settings: &quot;FILL&quot; 1, &quot;wght&quot; 700;">checklist</span>
+<span class="text-label-sm font-label-sm">Tasks</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors scale-95 active:scale-90 w-16 h-full rounded-lg">
+<span class="material-symbols-outlined mb-1" data-icon="inventory_2">inventory_2</span>
+<span class="text-label-sm font-label-sm">Vault</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors scale-95 active:scale-90 w-16 h-full rounded-lg">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="text-label-sm font-label-sm">Profile</span>
+</button>
+</nav>
+
+
+<button class="fixed bottom-20 right-container-margin md:bottom-8 md:right-8 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center z-50 hover:opacity-80 transition-opacity active:scale-90">
+  <span class="material-symbols-outlined" style="font-variation-settings: 'wght' 600;">add</span>
+</button></body></html>

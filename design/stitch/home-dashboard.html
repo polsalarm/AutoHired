@@ -1,0 +1,237 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>AutoHired Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed": "#0f0069",
+                    "tertiary": "#571ac0",
+                    "on-tertiary-fixed": "#23005c",
+                    "secondary-fixed": "#c9e6ff",
+                    "outline-variant": "#c7c4d8",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "inverse-primary": "#c3c0ff",
+                    "outline": "#777587",
+                    "on-tertiary-fixed-variant": "#5516be",
+                    "surface-container-high": "#dee8ff",
+                    "primary-container": "#4f46e5",
+                    "primary-fixed": "#e2dfff",
+                    "surface-container-highest": "#d8e3fb",
+                    "surface-variant": "#d8e3fb",
+                    "on-primary": "#ffffff",
+                    "secondary": "#006591",
+                    "tertiary-fixed": "#e9ddff",
+                    "on-secondary-fixed": "#001e2f",
+                    "inverse-on-surface": "#ecf1ff",
+                    "secondary-container": "#39b8fd",
+                    "on-surface": "#111c2d",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "tertiary-container": "#6f3dd9",
+                    "surface": "#f9f9ff",
+                    "on-secondary-fixed-variant": "#004c6e",
+                    "surface-tint": "#4d44e3",
+                    "on-surface-variant": "#464555",
+                    "secondary-fixed-dim": "#89ceff",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "inverse-surface": "#263143",
+                    "error": "#ba1a1a",
+                    "on-primary-container": "#dad7ff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-container": "#004666",
+                    "surface-container": "#e7eeff",
+                    "surface-bright": "#f9f9ff",
+                    "surface-container-low": "#f0f3ff",
+                    "on-error-container": "#93000a",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#d0bcff",
+                    "primary": "#3525cd",
+                    "on-background": "#111c2d",
+                    "background": "#f9f9ff",
+                    "error-container": "#ffdad6",
+                    "surface-dim": "#cfdaf2",
+                    "on-tertiary-container": "#e3d5ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-xl": "64px",
+                    "stack-sm": "8px",
+                    "gutter": "16px",
+                    "stack-lg": "32px",
+                    "container-margin": "20px",
+                    "stack-md": "16px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "display-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+        .shadow-level-1 { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05); }
+        .progress-ring__circle { transition: stroke-dashoffset 0.35s; transform: rotate(-90deg); transform-origin: 50% 50%; }
+    </style>
+</head>
+<body class="min-h-screen relative pb-[80px] md:hidden">
+<!-- TopAppBar -->
+<header class="sticky top-0 w-full z-50 bg-surface text-primary flat no shadows flex justify-between items-center h-16 px-container-margin max-w-full">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 20px;">person</span>
+</div>
+<div class="text-headline-md font-headline-md font-bold text-primary">AutoHired</div>
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors text-on-surface-variant hover:opacity-80 transition-opacity active:opacity-70">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+</header>
+<main class="px-container-margin pt-stack-md flex flex-col gap-stack-lg">
+<!-- Header Section -->
+<section class="flex flex-col gap-unit">
+<h1 class="text-headline-lg-mobile font-headline-lg-mobile text-on-surface tracking-tight">Hello, Alex!</h1>
+<p class="text-body-md font-body-md text-on-surface-variant">3 Applications Active</p>
+</section>
+<!-- Quick Add Bar -->
+<section class="relative bg-surface-container-lowest rounded-xl shadow-level-1 p-unit flex items-center border border-outline-variant/30 backdrop-blur-md">
+<input class="flex-1 bg-transparent border-none text-body-md font-body-md text-on-surface placeholder:text-outline focus:ring-0 px-gutter h-10" placeholder="Paste job link for AI to scrape details..." type="text">
+<button class="bg-primary text-on-primary rounded-xl px-gutter h-10 flex items-center gap-2 shadow-sm hover:opacity-90 transition-opacity active:scale-95 shrink-0">
+<span class="material-symbols-outlined text-on-primary" style="font-size: 18px;">auto_fix_high</span>
+<span class="text-label-md font-label-md hidden sm:inline">Scrape</span>
+</button>
+</section>
+<!-- Active Applications List -->
+<section class="flex flex-col gap-stack-md"><div class="hidden flex-col items-center justify-center py-stack-xl text-center gap-stack-sm"><span class="material-symbols-outlined text-outline" style="font-size: 48px;">work_history</span><p class="text-headline-md text-on-surface-variant">No active applications</p><p class="text-body-md text-outline">Paste a link above to start tracking your next career move.</p></div>
+<!-- Card 1 -->
+<article class="bg-surface-container-lowest rounded-xl shadow-level-1 p-container-margin flex flex-col gap-stack-sm relative overflow-hidden group">
+<div class="flex items-start gap-gutter">
+<div class="w-12 h-12 rounded-lg bg-surface-container-high shrink-0 overflow-hidden flex items-center justify-center border border-outline-variant/20">
+<img alt="Google Logo" class="w-full h-full object-cover" data-alt="A highly detailed, modern, and crisp photograph of an abstract corporate glass building exterior, reflecting a bright blue sky, conveying a sense of scale, technology, and ambition. The lighting is pristine and high-contrast, fitting a high-performance career dashboard aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwuPiPoZyxCgTNkbYbkIFS2c3257U4VknzY7BZTkkThu-7FR2gimGgWapBoWPG59SHb2II3GPJCcxkSoar2sw1kKjjcDoZgo9NrtMVTyOfxblCL5E9RAjfYmdWL8XAWUUZFB0Tx74C-I7in3hOY7M1eADbC0GQ_gFWQIHi9jMptdfc63lb6qs0CjNCW6XNEq2qri8F6UdQi1BVBJAq1fCG5CZQC_fw8hPuV0J6BxLhZxMSfVLIXw0zAQ3yfcxhAxS65ITphb6JGmA">
+</div>
+<div class="flex-1 flex flex-col">
+<h3 class="text-label-md font-label-md text-on-surface">Software Engineer Intern</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Google</p>
+</div>
+<div class="shrink-0 flex flex-col items-end gap-2"><div class="bg-primary-container text-on-primary-container px-2 py-1 rounded-full text-label-sm font-label-sm inline-flex items-center gap-1">Applied</div>
+<div class="bg-error-container text-on-error-container px-2 py-1 rounded-full text-label-sm font-label-sm inline-flex items-center gap-1">
+<span class="material-symbols-outlined" style="font-size: 14px;">schedule</span>
+                            2 days
+                        </div>
+</div>
+</div>
+<div class="absolute bottom-4 right-4 flex items-center justify-center w-12 h-12">
+<svg class="w-12 h-12" viewBox="0 0 100 100">
+<circle class="text-primary-container stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-width="8"></circle>
+<circle class="text-primary progress-ring__circle stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="251.2" stroke-dashoffset="20.096" stroke-linecap="round" stroke-width="8"></circle> <!-- 92% -->
+</svg>
+<span class="absolute text-label-sm font-label-sm text-on-surface font-bold">92</span>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="bg-surface-container-lowest rounded-xl shadow-level-1 p-container-margin flex flex-col gap-stack-sm relative overflow-hidden">
+<div class="flex items-start gap-gutter">
+<div class="w-12 h-12 rounded-lg bg-surface-container-high shrink-0 overflow-hidden flex items-center justify-center border border-outline-variant/20">
+<img alt="Vercel Context" class="w-full h-full object-cover" data-alt="A clean, minimalist workspace scene focusing on a glowing laptop screen displaying abstract code fragments, set against a pristine white desk. The overall mood is modern, sharp, and focused on high-speed development, utilizing a bright, corporate light-mode palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdMfYkb1HHmGiTLkJRDN1oBCmgpGkiTqJKYpXbRM1zMe0ncUAFQxXpn_XDx1Kgcc1H0HCcAKikxI43izzLdou_Q5z4M3kaVcz1Dm_ky4nglYexvREZ1woDHDm76_an47Aq3OraTeGbLwrQ6FjYeDtKcQASLW-Hayvppfa0xazRE_IVkE4qFnyz6uZkgXlWJDojF6LklHzwPQzbVixH_SscwtsLEDhEnWQygrfhaFXUK9_6rgyLSC2lolh_TBdL2VYKVl9Ed9koBlE">
+</div>
+<div class="flex-1 flex flex-col">
+<h3 class="text-label-md font-label-md text-on-surface">Frontend Developer</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Vercel</p>
+</div>
+<div class="shrink-0 flex flex-col items-end gap-2"><div class="bg-tertiary-container text-on-tertiary-container px-2 py-1 rounded-full text-label-sm font-label-sm inline-flex items-center gap-1">Interviewing</div>
+<div class="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full text-label-sm font-label-sm inline-flex items-center gap-1">
+<span class="material-symbols-outlined" style="font-size: 14px;">event</span>
+                            10 days
+                        </div>
+</div>
+</div>
+<div class="absolute bottom-4 right-4 flex items-center justify-center w-12 h-12">
+<svg class="w-12 h-12" viewBox="0 0 100 100">
+<circle class="text-primary-container stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-width="8"></circle>
+<circle class="text-primary progress-ring__circle stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="251.2" stroke-dashoffset="30.144" stroke-linecap="round" stroke-width="8"></circle> <!-- 88% -->
+</svg>
+<span class="absolute text-label-sm font-label-sm text-on-surface font-bold">88</span>
+</div>
+</article>
+<!-- Card 3 -->
+<article class="bg-surface-container-lowest rounded-xl shadow-level-1 p-container-margin flex flex-col gap-stack-sm relative overflow-hidden">
+<div class="flex items-start gap-gutter">
+<div class="w-12 h-12 rounded-lg bg-surface-container-high shrink-0 overflow-hidden flex items-center justify-center border border-outline-variant/20">
+<img alt="Figma Context" class="w-full h-full object-cover" data-alt="An abstract, high-end close-up of colorful sticky notes overlapping on a soft gray surface, representing design iteration and creativity. The lighting casts subtle drop shadows, aligning with a premium, organized corporate UI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvD0oZK1ECNXqqINB2HgTqAbJvwRkUl94Dc1a-_V_KFIi6sXv2I2MSN77008ySWZj_qKDjGVqdQqxhsghk9tX1HyHaiDUX1ShiqhdgQ9todIP6a_DCA-lu_uXxnBJl282228cBtiVv_NLjedFqEy6IQHlrVBgFOdd29B-awm1V1w2oEEgVQkXiP1pBsaFuBRj8YWwz-jYG81h9ehNdSHkxMugoq37EazdTA1ShqHvcM8rVhUKWlxYq12t6rUrptSv0w4BP8H_4HLA">
+</div>
+<div class="flex-1 flex flex-col">
+<h3 class="text-label-md font-label-md text-on-surface">Product Design Intern</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Figma</p>
+</div>
+<div class="shrink-0 flex flex-col items-end gap-2"><div class="bg-surface-variant text-on-surface-variant px-2 py-1 rounded-full text-label-sm font-label-sm inline-flex items-center gap-1 border border-outline-variant/50">Draft</div>
+<div class="bg-surface-variant text-on-surface-variant px-2 py-1 rounded-full text-label-sm font-label-sm inline-flex items-center gap-1 border border-outline-variant/50">
+<span class="material-symbols-outlined" style="font-size: 14px;">hourglass_bottom</span>
+                            5 days
+                        </div>
+</div>
+</div>
+<div class="absolute bottom-4 right-4 flex items-center justify-center w-12 h-12">
+<svg class="w-12 h-12" viewBox="0 0 100 100">
+<circle class="text-primary-container stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-width="8"></circle>
+<circle class="text-primary progress-ring__circle stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="251.2" stroke-dashoffset="62.8" stroke-linecap="round" stroke-width="8"></circle> <!-- 75% -->
+</svg>
+<span class="absolute text-label-sm font-label-sm text-on-surface font-bold">75</span>
+</div>
+</article>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface border-t border-outline-variant shadow-lg flex justify-around items-center h-16 px-container-margin pb-safe">
+<!-- Home (Active) -->
+<a class="flex flex-col items-center justify-center text-primary font-bold relative after:content-[''] after:absolute after:top-0 after:w-8 after:h-1 after:bg-primary after:rounded-full hover:bg-surface-container-low transition-colors scale-95 active:scale-90 transition-transform flex-1 h-full pt-2" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="text-label-sm font-label-sm mt-1">Home</span>
+</a>
+<!-- Tasks -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors scale-95 active:scale-90 transition-transform flex-1 h-full pt-2" href="#">
+<span class="material-symbols-outlined">checklist</span>
+<span class="text-label-sm font-label-sm mt-1">Tasks</span>
+</a>
+<!-- Vault -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors scale-95 active:scale-90 transition-transform flex-1 h-full pt-2" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-label-sm font-label-sm mt-1">Vault</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors scale-95 active:scale-90 transition-transform flex-1 h-full pt-2" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-label-sm font-label-sm mt-1">Profile</span>
+</a>
+</nav>
+
+
+</body></html>

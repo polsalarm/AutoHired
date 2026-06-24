@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>AutoHired - User Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#c7c4d8",
+                        "outline": "#777587",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#39b8fd",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#ecf1ff",
+                        "surface": "#f9f9ff",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f9f9ff",
+                        "surface-container": "#e7eeff",
+                        "on-secondary": "#ffffff",
+                        "background": "#f9f9ff",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-primary-container": "#dad7ff",
+                        "surface-variant": "#d8e3fb",
+                        "surface-container-low": "#f0f3ff",
+                        "inverse-primary": "#c3c0ff",
+                        "on-primary-fixed": "#0f0069",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#d8e3fb",
+                        "on-tertiary-fixed": "#23005c",
+                        "tertiary": "#571ac0",
+                        "on-tertiary-fixed-variant": "#5516be",
+                        "secondary": "#006591",
+                        "on-secondary-fixed": "#001e2f",
+                        "tertiary-fixed-dim": "#d0bcff",
+                        "surface-dim": "#cfdaf2",
+                        "primary-container": "#4f46e5",
+                        "tertiary-container": "#6f3dd9",
+                        "on-tertiary-container": "#e3d5ff",
+                        "on-secondary-container": "#004666",
+                        "inverse-surface": "#263143",
+                        "on-surface-variant": "#464555",
+                        "surface-tint": "#4d44e3",
+                        "primary-fixed": "#e2dfff",
+                        "surface-container-high": "#dee8ff",
+                        "secondary-fixed": "#c9e6ff",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-surface": "#111c2d",
+                        "tertiary-fixed": "#e9ddff",
+                        "on-background": "#111c2d",
+                        "primary": "#3525cd",
+                        "on-secondary-fixed-variant": "#004c6e",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#89ceff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "stack-xl": "64px",
+                        "gutter": "16px",
+                        "stack-md": "16px",
+                        "stack-sm": "8px",
+                        "container-margin": "20px",
+                        "stack-lg": "32px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+        .pt-safe { padding-top: env(safe-area-inset-top, 20px); }
+        
+        .ambient-shadow-level-1 {
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .ambient-shadow-level-2 {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col pt-safe pb-safe md:bg-surface-container-lowest">
+<!-- TopAppBar -->
+<header class="sticky top-0 w-full z-50 bg-surface md:hidden md:flex flex justify-between items-center h-16 px-container-margin max-w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-2xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+<span class="text-headline-md font-headline-md font-bold text-primary">AutoHired</span>
+</div>
+<button aria-label="Notifications" class="hover:opacity-80 transition-opacity active:opacity-70">
+<span class="material-symbols-outlined text-on-surface-variant text-2xl" data-icon="notifications">notifications</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full max-w-[1200px] mx-auto px-container-margin md:grid md:grid-cols-12 md:gap-gutter pb-24 md:pb-8">
+<!-- Profile Header Section -->
+<section class="md:col-span-12 flex flex-col items-center mt-8 mb-stack-lg relative">
+<div class="relative w-32 h-32 rounded-full mb-4 ambient-shadow-level-2">
+<img alt="Alex Johnson Profile" class="w-full h-full object-cover rounded-full border-4 border-surface-container-lowest" data-alt="A high-quality, professional headshot of a young male software engineer looking directly at the camera with a confident, slight smile. He is wearing a clean, modern navy blue crew neck t-shirt. The lighting is soft and flattering studio light, creating a bright, optimistic light-mode aesthetic. The background is a clean, slightly blurred light gray studio backdrop to maintain focus on the subject. The overall mood is approachable, ambitious, and highly professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuABHMa6Hxyt8l4Le8SQ6wUchDxgfcOl_eu3E-LBefS_qBbx21Ev-RwAiVpNpRR93yPyDuyAGp-8CEs8Tk8-EKDff8sz624qUODPJpwFIsSdLqahrvyzboXLodeRbkJSGK0d7ny-Eb-xhrx7LNpNc_NvdfHw9A0pDRui42E_6ZwL0Z_8o7MZr_y2CXxo9QYzy-_ioqH4sVGdReDC0Bz4p_KGQ-cxO-vsQ8K_p5ENoz9Lv302qK_aLqlWaLxPeTx2i5qPItwDnWpehnc"/>
+<button aria-label="Edit Profile Picture" class="absolute bottom-0 right-0 bg-primary text-on-primary w-8 h-8 rounded-full flex items-center justify-center ambient-shadow-level-1 hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="edit">edit</span>
+</button>
+</div>
+<h1 class="text-headline-lg-mobile font-headline-lg-mobile md:text-headline-lg md:font-headline-lg text-on-surface text-center">Alex Johnson</h1>
+<p class="text-body-lg font-body-lg text-on-surface-variant mt-1 text-center">Aspiring Software Engineer</p>
+</section>
+<!-- Quick Stats Bento Grid -->
+<section class="md:col-span-12 grid grid-cols-2 md:grid-cols-3 gap-unit mb-stack-lg">
+<div class="bg-surface-container-lowest rounded-xl p-5 ambient-shadow-level-1 flex flex-col justify-between h-28 relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-16 h-16 bg-surface-container-low rounded-full opacity-50 transition-transform group-hover:scale-150 duration-500"></div>
+<span class="material-symbols-outlined text-primary mb-2 relative z-10" data-icon="send">send</span>
+<div class="relative z-10">
+<p class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Applications Sent</p>
+<p class="text-headline-md font-headline-md text-on-surface mt-1">142</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-5 ambient-shadow-level-1 flex flex-col justify-between h-28 relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-16 h-16 bg-tertiary-fixed-dim rounded-full opacity-30 transition-transform group-hover:scale-150 duration-500"></div>
+<span class="material-symbols-outlined text-tertiary mb-2 relative z-10" data-icon="event_available">event_available</span>
+<div class="relative z-10">
+<p class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Interviews Secured</p>
+<p class="text-headline-md font-headline-md text-on-surface mt-1">12</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-5 ambient-shadow-level-1 flex flex-col justify-between h-28 col-span-2 md:col-span-1 relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-16 h-16 bg-secondary-fixed rounded-full opacity-40 transition-transform group-hover:scale-150 duration-500"></div>
+<div class="flex justify-between items-start relative z-10">
+<span class="material-symbols-outlined text-secondary mb-2" data-icon="analytics">analytics</span>
+<!-- Circular Progress Indicator -->
+<div class="relative w-10 h-10 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+<path class="text-secondary stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="85, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<span class="absolute text-label-sm font-label-sm text-secondary font-bold">85%</span>
+</div>
+</div>
+<div class="relative z-10">
+<p class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Avg. Match Score</p>
+</div>
+</div>
+</section>
+<!-- Settings List -->
+<section class="md:col-span-12 flex flex-col gap-unit mb-stack-xl">
+<h2 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider mb-2 ml-1">Account Settings</h2>
+<a class="bg-surface-container-lowest rounded-lg p-4 flex items-center justify-between ambient-shadow-level-1 hover:bg-surface-container-low transition-colors active:scale-[0.98]" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</div>
+<div>
+<h3 class="text-body-md font-body-md text-on-surface font-medium">Personal Information</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant mt-0.5">Update email, phone, and resume</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</a>
+<a class="bg-surface-container-lowest rounded-lg p-4 flex items-center justify-between ambient-shadow-level-1 hover:bg-surface-container-low transition-colors active:scale-[0.98]" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+</div>
+<div>
+<h3 class="text-body-md font-body-md text-on-surface font-medium">Application Preferences</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant mt-0.5">Role types, locations, salary expectations</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</a>
+<a class="bg-surface-container-lowest rounded-lg p-4 flex items-center justify-between ambient-shadow-level-1 hover:bg-surface-container-low transition-colors active:scale-[0.98]" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="notifications_active">notifications_active</span>
+</div>
+<div>
+<h3 class="text-body-md font-body-md text-on-surface font-medium">Notifications</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant mt-0.5">Manage alerts for new matches and status updates</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</a>
+<a class="bg-surface-container-lowest rounded-lg p-4 flex items-center justify-between ambient-shadow-level-1 hover:bg-surface-container-low transition-colors active:scale-[0.98]" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+</div>
+<div>
+<h3 class="text-body-md font-body-md text-on-surface font-medium">Security</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant mt-0.5">Password, 2FA, and connected accounts</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</a>
+<!-- Logout Button -->
+<div class="mt-stack-md">
+<button class="w-full bg-error-container text-on-error-container font-label-md text-label-md py-4 rounded-xl flex items-center justify-center gap-2 ambient-shadow-level-1 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                    Sign Out
+                </button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface border-t border-outline-variant shadow-lg md:hidden pb-safe">
+<ul class="flex justify-around items-center h-16 px-container-margin">
+<!-- Home -->
+<li>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors scale-95 active:scale-90 w-16 h-full rounded-lg" href="#">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="home">home</span>
+<span class="text-label-sm font-label-sm">Home</span>
+</a>
+</li>
+<!-- Tasks -->
+<li>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors scale-95 active:scale-90 w-16 h-full rounded-lg" href="#">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="checklist">checklist</span>
+<span class="text-label-sm font-label-sm">Tasks</span>
+</a>
+</li>
+<!-- Vault -->
+<li>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors scale-95 active:scale-90 w-16 h-full rounded-lg" href="#">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="inventory_2">inventory_2</span>
+<span class="text-label-sm font-label-sm">Vault</span>
+</a>
+</li>
+<!-- Profile (ACTIVE) -->
+<li>
+<a class="flex flex-col items-center justify-center text-primary font-bold relative after:content-[''] after:absolute after:top-0 after:w-8 after:h-1 after:bg-primary after:rounded-full hover:bg-surface-container-low transition-colors scale-95 active:scale-90 w-16 h-full rounded-lg" href="#">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="person" data-weight="fill" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="text-label-sm font-label-sm">Profile</span>
+</a>
+</li>
+</ul>
+</nav>
+</body></html>
