@@ -4,13 +4,16 @@ import {
   toApplication,
   toAnalysis,
   toDocument,
+  toEvent,
   toTask,
 } from "./lib/mappers";
 import type {
   AIAnalysis,
   Application,
   DocumentType,
+  EventType,
   ProfileStats,
+  ScheduleEvent,
   ScrapedJob,
   TaskItem,
   VaultDocument,
@@ -499,6 +502,57 @@ export async function getAnalysisForApplication(
     .maybeSingle();
   if (error) throw error;
   return data ? toAnalysis(data) : null;
+}
+
+// ---------- Schedule events ----------
+
+export interface EventInput {
+  type: EventType;
+  title: string;
+  startsAt: string; // ISO timestamp
+  location: string | null;
+  notes: string | null;
+  applicationId: string | null;
+}
+
+export async function listEvents(): Promise<ScheduleEvent[]> {
+  const { data, error } = await db()
+    .from("events")
+    .select("*")
+    .order("starts_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map(toEvent);
+}
+
+export async function createEvent(
+  userId: string,
+  input: EventInput,
+): Promise<ScheduleEvent> {
+  const { data, error } = await db()
+    .from("events")
+    .insert({
+      user_id: userId,
+      application_id: input.applicationId,
+      type: input.type,
+      title: input.title,
+      starts_at: input.startsAt,
+      location: input.location,
+      notes: input.notes,
+    })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return toEvent(data);
+}
+
+export async function setEventDone(id: string, done: boolean): Promise<void> {
+  const { error } = await db().from("events").update({ done }).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteEvent(id: string): Promise<void> {
+  const { error } = await db().from("events").delete().eq("id", id);
+  if (error) throw error;
 }
 
 // ---------- Derived profile stats ----------
