@@ -39,6 +39,20 @@ export function sttSupported(): boolean {
   return getRecognitionCtor() !== null;
 }
 
+/** Prompts for / verifies microphone access. Returns false if blocked. */
+export async function requestMic(): Promise<boolean> {
+  try {
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+      return false;
+    }
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach((t) => t.stop());
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export interface Recognizer {
   start: () => void;
   stop: () => void;
