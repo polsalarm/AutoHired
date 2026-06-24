@@ -4,40 +4,66 @@ import OpenAI from "openai";
 /**
  * Single LLM gateway used by parse / task-gen / match.
  *
- * Provider selection (first match wins):
+ * Providers are tried in priority order, falling through to the next on any
+ * error (e.g. OpenAI out of quota → Gemini). If all fail, callLLM throws and
+ * callers use their offline heuristic fallback.
+ *
  *   OPENAI_API_KEY    → OpenAI (or any OpenAI-compatible endpoint via OPENAI_BASE_URL)
  *   VERTEX_PROJECT    → Vertex AI (Gemini via ADC; uses your GCP credits)
  *   GEMINI_API_KEY    → Google AI Studio (Gemini, free tier)
  *   ANTHROPIC_API_KEY → Anthropic Claude (paid)
- *   none              → hasLLM() is false; callers use their heuristic fallback.
+ *   none              → hasLLM() is false.
  *
  * Returns the model's raw text. Callers strip code fences + JSON.parse.
  */
 
-export type LlmProvider = "openai" | "vertex" | "gemini" | "anthropic" | null;
+export type LlmProvider = "openai" | "vertex" | "gemini" | "anthropic";
 
-export function activeProvider(): LlmProvider {
-  if (process.env.OPENAI_API_KEY) return "openai";
-  if (process.env.VERTEX_PROJECT) return "vertex";
-  if (process.env.GEMINI_API_KEY) return "gemini";
-  if (process.env.ANTHROPIC_API_KEY) return "anthropic";
-  return null;
+/** Configured providers in priority order. */
+export function providerChain(): LlmProvider[] {
+  const chain: LlmProvider[] = [];
+  if (process.env.OPENAI_API_KEY) chain.push("openai");
+  // vertex + gemini both route through callGoogle (auto-selects vertex first),
+  // so list only one to avoid calling the same backend twice.
+  if (process.env.VERTEX_PROJECT) chain.push("vertex");
+  else if (process.env.GEMINI_API_KEY) chain.push("gemini");
+  if (process.env.ANTHROPIC_API_KEY) chain.push("anthropic");
+  return chain;
+}
+
+/** Highest-priority configured provider, or null. */
+export function activeProvider(): LlmProvider | null {
+  return providerChain()[0] ?? null;
 }
 
 export function hasLLM(): boolean {
-  return activeProvider() !== null;
+  return providerChain().length > 0;
 }
 
 interface CallOpts {
   maxTokens?: number;
 }
 
-export async function callLLM(prompt: string, opts: CallOpts = {}): Promise<string> {
-  const provider = activeProvider();
+function callProvider(provider: LlmProvider, prompt: string, opts: CallOpts): Promise<string> {
   if (provider === "openai") return callOpenAI(prompt, opts);
   if (provider === "vertex" || provider === "gemini") return callGoogle(prompt, opts);
-  if (provider === "anthropic") return callAnthropic(prompt, opts);
-  throw new Error("No LLM provider configured");
+  return callAnthropic(prompt, opts);
+}
+
+export async function callLLM(prompt: string, opts: CallOpts = {}): Promise<string> {
+  const chain = providerChain();
+  if (chain.length === 0) throw new Error("No LLM provider configured");
+  let lastErr: unknown;
+  for (const provider of chain) {
+    try {
+      return await callProvider(provider, prompt, opts);
+    } catch (err) {
+      lastErr = err;
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[llm] ${provider} failed (${msg}) — falling back to next provider`);
+    }
+  }
+  throw lastErr ?? new Error("All LLM providers failed");
 }
 
 // --- OpenAI (real API, or any OpenAI-compatible endpoint via OPENAI_BASE_URL) ---
