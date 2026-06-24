@@ -31,3 +31,24 @@ export interface InterviewQuestion {
 export interface InterviewPrepResult {
   questions: InterviewQuestion[];
 }
+
+export interface InterviewQA {
+  question: string;
+  answer: string;
+}
+
+export interface InterviewScorecard {
+  overall: number; // 0–100
+  verdict: string; // 2-3 words
+  summary: string;
+  strengths: string[];
+  improvements: string[];
+}
+
+/** One turn of a live (voice) mock interview. */
+export interface InterviewTurnResult {
+  feedback: string; // brief reaction to the last answer ("" on the first turn)
+  nextQuestion: string | null; // null once the interview is done
+  done: boolean;
+  scorecard: InterviewScorecard | null; // present only when done
+}
