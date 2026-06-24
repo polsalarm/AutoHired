@@ -73,3 +73,19 @@ export interface ProfileStats {
   interviewsSecured: number;
   avgMatchScore: number;
 }
+
+export type EventType = "interview" | "meeting" | "call" | "deadline";
+
+/** A scheduled event tied (optionally) to an application — so nothing slips. */
+export interface ScheduleEvent {
+  id: string;
+  userId: string;
+  applicationId: string | null;
+  type: EventType;
+  title: string;
+  startsAt: string; // ISO timestamp
+  location: string | null;
+  notes: string | null;
+  done: boolean;
+  createdAt: string;
+}
