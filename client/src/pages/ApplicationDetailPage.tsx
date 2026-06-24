@@ -6,6 +6,7 @@ import { ErrorState, Loading } from "../components/states";
 import { useAnalysis, useApplication } from "../hooks/useData";
 import { useAuth } from "../auth/AuthContext";
 import { Checklist } from "../components/Checklist";
+import { InterviewPractice } from "../components/InterviewPractice";
 import {
   deleteApplication,
   updateApplicationDeadline,
@@ -283,6 +284,17 @@ export function ApplicationDetailPage() {
           }}
           userId={user?.id}
           demoMode={demoMode}
+        />
+
+        {/* AI interview practice — tailored to this role + the user's profile */}
+        <InterviewPractice
+          appInfo={{
+            title: app.title,
+            company: app.company,
+            requirements: app.requirements,
+            description: app.description,
+          }}
+          userId={user?.id}
         />
 
         <section className="flex flex-col gap-stack-sm">
