@@ -1,9 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 
 /**
  * Single LLM gateway used by parse / task-gen / match.
  *
  * Provider selection (first match wins):
+ *   OPENAI_API_KEY    → OpenAI (or any OpenAI-compatible endpoint via OPENAI_BASE_URL)
  *   VERTEX_PROJECT    → Vertex AI (Gemini via ADC; uses your GCP credits)
  *   GEMINI_API_KEY    → Google AI Studio (Gemini, free tier)
  *   ANTHROPIC_API_KEY → Anthropic Claude (paid)
@@ -12,9 +14,10 @@ import { GoogleGenAI } from "@google/genai";
  * Returns the model's raw text. Callers strip code fences + JSON.parse.
  */
 
-export type LlmProvider = "vertex" | "gemini" | "anthropic" | null;
+export type LlmProvider = "openai" | "vertex" | "gemini" | "anthropic" | null;
 
 export function activeProvider(): LlmProvider {
+  if (process.env.OPENAI_API_KEY) return "openai";
   if (process.env.VERTEX_PROJECT) return "vertex";
   if (process.env.GEMINI_API_KEY) return "gemini";
   if (process.env.ANTHROPIC_API_KEY) return "anthropic";
@@ -31,9 +34,44 @@ interface CallOpts {
 
 export async function callLLM(prompt: string, opts: CallOpts = {}): Promise<string> {
   const provider = activeProvider();
+  if (provider === "openai") return callOpenAI(prompt, opts);
   if (provider === "vertex" || provider === "gemini") return callGoogle(prompt, opts);
   if (provider === "anthropic") return callAnthropic(prompt, opts);
   throw new Error("No LLM provider configured");
+}
+
+// --- OpenAI (real API, or any OpenAI-compatible endpoint via OPENAI_BASE_URL) ---
+
+let openaiClient: OpenAI | null = null;
+
+function openaiClientInstance(): OpenAI {
+  if (openaiClient) return openaiClient;
+  openaiClient = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY!,
+    // Empty → real OpenAI. Point at Groq / gpt-oss etc. to exercise this exact
+    // code path for free; clear it at finals and only the key changes.
+    baseURL: process.env.OPENAI_BASE_URL || undefined,
+  });
+  return openaiClient;
+}
+
+async function callOpenAI(prompt: string, opts: CallOpts): Promise<string> {
+  const res = await openaiClientInstance().chat.completions.create({
+    model: process.env.OPENAI_MODEL ?? "gpt-4.1-mini",
+    messages: [
+      // json_object mode requires "json" to appear in the messages; this also
+      // keeps output fence-free so the shared parseJson() works unchanged.
+      { role: "system", content: "Respond with valid JSON only — no markdown, no code fences." },
+      { role: "user", content: prompt },
+    ],
+    // max_completion_tokens (not the deprecated max_tokens) so newer/reasoning
+    // models accept it too. Temperature left at default for the same reason.
+    max_completion_tokens: opts.maxTokens ?? 4096,
+    response_format: { type: "json_object" },
+  });
+  const text = res.choices[0]?.message?.content;
+  if (!text) throw new Error("OpenAI returned no text");
+  return text;
 }
 
 // --- Google (Vertex AI via ADC, or AI Studio via API key) ---
