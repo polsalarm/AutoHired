@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Icon } from "./Icon";
+import { VoiceInterview } from "./VoiceInterview";
 import { generateInterviewQuestions } from "../api";
 import type { InterviewQuestion } from "../types";
 
@@ -27,10 +28,21 @@ export function InterviewPractice({
   };
   userId: string | undefined;
 }) {
+  const [mode, setMode] = useState<"choose" | "text" | "voice">("choose");
   const [questions, setQuestions] = useState<InterviewQuestion[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<Set<number>>(new Set());
+
+  if (mode === "voice") {
+    return (
+      <VoiceInterview
+        appInfo={appInfo}
+        userId={userId}
+        onExit={() => setMode("choose")}
+      />
+    );
+  }
 
   async function generate() {
     setLoading(true);
@@ -66,6 +78,19 @@ export function InterviewPractice({
             Questions tailored to this role and your profile
           </p>
         </div>
+        {mode === "text" && !loading && (
+          <button
+            onClick={() => {
+              setMode("choose");
+              setQuestions(null);
+              setError(null);
+            }}
+            aria-label="Back to interview options"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors shrink-0"
+          >
+            <Icon name="arrow_back" size={18} />
+          </button>
+        )}
         {questions && !loading && (
           <button
             onClick={generate}
@@ -91,14 +116,36 @@ export function InterviewPractice({
         </p>
       )}
 
-      {!questions && !loading && !error && (
-        <button
-          onClick={generate}
-          className="mt-stack-md w-full bg-primary text-on-primary text-label-md py-3 rounded-lg shadow-level-1 hover:bg-on-primary-fixed-variant active:scale-95 transition-all flex items-center justify-center gap-2"
-        >
-          <Icon name="auto_awesome" size={18} />
-          Generate practice questions
-        </button>
+      {mode === "choose" && (
+        <div className="mt-stack-md grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button
+            onClick={() => setMode("voice")}
+            className="bg-primary text-on-primary rounded-xl p-4 text-left shadow-level-1 hover:bg-on-primary-fixed-variant active:scale-95 transition-all flex flex-col gap-1"
+          >
+            <span className="flex items-center gap-2 text-label-md font-semibold">
+              <Icon name="mic" fill size={18} />
+              Voice interview
+            </span>
+            <span className="text-label-sm opacity-90">
+              Spoken AI mock + live feedback & scorecard
+            </span>
+          </button>
+          <button
+            onClick={() => {
+              setMode("text");
+              generate();
+            }}
+            className="bg-surface border border-outline-variant/40 text-on-surface rounded-xl p-4 text-left hover:bg-surface-container-low active:scale-95 transition-all flex flex-col gap-1"
+          >
+            <span className="flex items-center gap-2 text-label-md font-semibold">
+              <Icon name="quiz" size={18} />
+              Practice questions
+            </span>
+            <span className="text-label-sm text-on-surface-variant">
+              Read at your own pace, with model answers
+            </span>
+          </button>
+        </div>
       )}
 
       {questions && !loading && questions.length === 0 && (
