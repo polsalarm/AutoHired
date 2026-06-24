@@ -12,6 +12,7 @@ import type {
   Application,
   DocumentType,
   EventType,
+  InterviewQuestion,
   ProfileStats,
   ScheduleEvent,
   ScrapedJob,
@@ -502,6 +503,49 @@ export async function getAnalysisForApplication(
     .maybeSingle();
   if (error) throw error;
   return data ? toAnalysis(data) : null;
+}
+
+// ---------- Interview practice ----------
+
+/**
+ * Asks the server for interview questions tailored to an application and the
+ * user's profile. Stateless — questions are not persisted.
+ */
+export async function generateInterviewQuestions(
+  userId: string | undefined,
+  app: {
+    title: string;
+    company: string;
+    requirements: string[];
+    description: string;
+  },
+): Promise<InterviewQuestion[]> {
+  // Fold in the profile so questions probe the candidate's real background.
+  let profile = "";
+  if (userId) {
+    try {
+      profile = profileToText(await getProfile(userId));
+    } catch {
+      // Non-fatal: generate from the role alone if the profile can't be read.
+    }
+  }
+  const res = await fetch(apiUrl("/api/interview/questions"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      title: app.title,
+      company: app.company,
+      requirements: app.requirements,
+      description: app.description,
+      profile,
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `Interview prep failed (${res.status})`);
+  }
+  const { questions } = (await res.json()) as { questions: InterviewQuestion[] };
+  return questions ?? [];
 }
 
 // ---------- Schedule events ----------
