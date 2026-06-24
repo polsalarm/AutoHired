@@ -3,7 +3,7 @@
 A mobile-first Progressive Web App that turns a messy job/internship hunt into a tracked, guided pipeline. Paste a posting URL, and AutoHired scrapes it, parses the requirements with AI, builds a personalized to-do checklist, stores your documents, and scores how well you match — with concrete suggestions to close the gaps.
 
 Design source: Stitch project **AutoHired AI Application Tracker** (exported HTML in `design/stitch/`).
-Architecture: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
+Architecture: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) · Roadmap: [`docs/ADDITIONAL_FEATURES.md`](./docs/ADDITIONAL_FEATURES.md).
 
 ---
 
@@ -32,7 +32,7 @@ AutoHired collapses that whole loop into one paste. Drop in a URL and it does th
   ┌──────────┐   paste URL    ┌─────────────────────────────┐
   │  Client  │ ─────────────▶ │  Server (stateless API)     │
   │  (PWA)   │                │  scrape · extract · AI       │
-  │          │ ◀───────────── │  Vertex/Gemini/Anthropic     │
+  │          │ ◀───────────── │  OpenAI/Gemini/Vertex/…      │
   └────┬─────┘   parsed job   └─────────────────────────────┘
        │  reads/writes (RLS-scoped, owner-only)
        ▼
@@ -47,7 +47,7 @@ The **server is stateless** — it never touches user data. It only scrapes URLs
 
 - **Client:** React + Vite + TypeScript + Tailwind CSS, PWA via `vite-plugin-pwa`
 - **Server:** Node.js + Express + TypeScript — Cheerio scraper (+ form extraction), document text extraction (`pdf-parse`, `mammoth`), AI pipeline
-- **AI:** single gateway (`server/src/services/llm.ts`) — Vertex AI (Gemini) → Gemini API key → Anthropic → offline heuristic fallback
+- **AI:** single gateway (`server/src/services/llm.ts`) with a runtime fallback chain — OpenAI (or any OpenAI-compatible endpoint) → Vertex AI (Gemini) → Gemini API key → Anthropic → offline heuristic. Each provider is tried in order and falls through to the next on error.
 - **Data:** Supabase — Postgres (RLS), Auth, Storage (`supabase/migrations/`)
 
 ## Layout
@@ -70,7 +70,8 @@ npm run dev        # client http://localhost:5173 + server http://localhost:3001
 ### Config
 
 - **Client (Supabase):** copy `client/.env.example` → `client/.env`, set `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`, then run the migrations in `supabase/migrations/` (`0001`→`0002`→`0003`) in the Supabase SQL editor — or paste `supabase/migrations/provision_all.sql` once on a fresh project. Without these the client runs in **demo mode** (mock data, no auth gate). Leave `VITE_API_URL` empty for local dev (Vite proxies `/api` → `localhost:3001`).
-- **Server (AI):** copy `server/.env.example` → `server/.env`. Pick one provider — set nothing to use the free offline heuristic fallback:
+- **Server (AI):** copy `server/.env.example` → `server/.env`. Set any/all providers — they're tried in priority order and fall through on error; set nothing to use the free offline heuristic fallback:
+  - **OpenAI** (highest priority): set `OPENAI_API_KEY` + `OPENAI_MODEL`. Point `OPENAI_BASE_URL` at any OpenAI-compatible endpoint (e.g. Featherless, Groq) to run the same code path for free; leave empty for real OpenAI.
   - **Vertex AI** (uses GCP credits, `gemini-2.5-pro`): set `VERTEX_PROJECT`; auth locally via `gcloud auth application-default login`, in prod via `GOOGLE_SERVICE_ACCOUNT_KEY`.
   - **Gemini API key** (AI Studio free tier): set `GEMINI_API_KEY`.
   - **Anthropic** (paid): set `ANTHROPIC_API_KEY`.
