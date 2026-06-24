@@ -74,6 +74,14 @@ export interface ProfileStats {
   avgMatchScore: number;
 }
 
+/** An AI-generated interview-practice question tailored to a role + applicant. */
+export interface InterviewQuestion {
+  question: string;
+  category: string; // behavioral | technical | role | situational | company
+  tip: string;
+  sampleAnswer: string;
+}
+
 export type EventType = "interview" | "meeting" | "call" | "deadline";
 
 /** A scheduled event tied (optionally) to an application — so nothing slips. */
