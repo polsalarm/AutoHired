@@ -7,6 +7,7 @@ import { PWAStatus } from "./components/PWAStatus";
 import { HomePage } from "./pages/HomePage";
 import { TasksPage } from "./pages/TasksPage";
 import { VaultPage } from "./pages/VaultPage";
+import { SchedulePage } from "./pages/SchedulePage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { ApplicationDetailPage } from "./pages/ApplicationDetailPage";
 import { NewApplicationPage } from "./pages/NewApplicationPage";
@@ -28,6 +29,7 @@ function Shell() {
         <Route path="/" element={<HomePage />} />
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/vault" element={<VaultPage />} />
+        <Route path="/schedule" element={<SchedulePage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/applications/new" element={<NewApplicationPage />} />
         <Route path="/applications/:id" element={<ApplicationDetailPage />} />
