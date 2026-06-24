@@ -7,6 +7,7 @@ import {
 } from "../api";
 import {
   createRecognizer,
+  requestMic,
   speak,
   sttSupported,
   stopSpeaking,
@@ -51,20 +52,52 @@ export function VoiceInterview({
   const [history, setHistory] = useState<QA[]>([]);
   const [scorecard, setScorecard] = useState<InterviewScorecard | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [micError, setMicError] = useState<string | null>(null);
   const [muted, setMuted] = useState(false);
 
   const profileRef = useRef("");
   const recRef = useRef<Recognizer | null>(null);
+  const listeningRef = useRef(false);
   const mutedRef = useRef(false);
   mutedRef.current = muted;
 
   // Cleanup voice on unmount.
   useEffect(() => {
     return () => {
+      listeningRef.current = false;
       stopSpeaking();
       recRef.current?.abort();
     };
   }, []);
+
+  function ensureRecognizer(): Recognizer | null {
+    if (recRef.current) return recRef.current;
+    recRef.current = createRecognizer({
+      onResult: (text) => setTranscript(text),
+      onEnd: () => {
+        // Chrome ends recognition after a short silence — keep it going until
+        // the user submits their answer.
+        if (listeningRef.current) {
+          try {
+            recRef.current?.start();
+          } catch {
+            /* ignore */
+          }
+        }
+      },
+      onError: (code) => {
+        if (code === "not-allowed" || code === "service-not-allowed") {
+          listeningRef.current = false;
+          setMicError("Microphone blocked. Allow mic access in your browser (or just type your answer below).");
+        } else if (code === "audio-capture") {
+          listeningRef.current = false;
+          setMicError("No microphone detected. Type your answer below.");
+        }
+        // 'no-speech' / 'network' → ignore; onEnd will restart listening.
+      },
+    });
+    return recRef.current;
+  }
 
   function ask(q: string) {
     setQuestion(q);
@@ -77,20 +110,21 @@ export function VoiceInterview({
     }
   }
 
-  function beginListening() {
+  async function beginListening() {
     setStatus("listening");
-    if (!recRef.current) {
-      recRef.current = createRecognizer({
-        onResult: (text) => setTranscript(text),
-        onEnd: () => {
-          /* stopped — submit is manual */
-        },
-        onError: () => {
-          /* ignore; user can type instead */
-        },
-      });
+    setMicError(null);
+    if (!sttSupported()) {
+      // No speech recognition in this browser — the user types instead.
+      setMicError("Voice input isn't supported in this browser — type your answer below. (Chrome/Edge recommended.)");
+      return;
     }
-    recRef.current?.start();
+    const ok = await requestMic();
+    if (!ok) {
+      setMicError("Microphone blocked or unavailable. Allow mic access, or type your answer below.");
+      return;
+    }
+    listeningRef.current = true;
+    ensureRecognizer()?.start();
   }
 
   async function start() {
@@ -108,6 +142,7 @@ export function VoiceInterview({
   }
 
   async function submitAnswer() {
+    listeningRef.current = false;
     recRef.current?.stop();
     stopSpeaking();
     const answer = transcript.trim();
@@ -131,6 +166,7 @@ export function VoiceInterview({
   }
 
   function finish(card: InterviewScorecard) {
+    listeningRef.current = false;
     recRef.current?.abort();
     stopSpeaking();
     setScorecard(card);
@@ -139,6 +175,7 @@ export function VoiceInterview({
 
   /** End early: force an evaluation from whatever has been answered. */
   async function endNow(hist: QA[] = history) {
+    listeningRef.current = false;
     recRef.current?.stop();
     stopSpeaking();
     setStatus("thinking");
@@ -190,6 +227,7 @@ export function VoiceInterview({
         )}
         <button
           onClick={() => {
+            listeningRef.current = false;
             stopSpeaking();
             recRef.current?.abort();
             onExit();
@@ -279,12 +317,19 @@ export function VoiceInterview({
                   rows={4}
                   className="w-full bg-surface border border-outline-variant/40 rounded-lg p-3 pr-10 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary resize-none"
                 />
-                {status === "listening" && (
+                {status === "listening" && !micError && (
                   <span className="absolute top-3 right-3 flex items-center gap-1.5 text-error">
                     <span className="w-2.5 h-2.5 rounded-full bg-error animate-pulse" />
                   </span>
                 )}
               </div>
+
+              {micError && (
+                <p className="text-label-md text-error flex items-start gap-2 -mt-1">
+                  <Icon name="mic_off" size={16} className="mt-0.5 shrink-0" />
+                  {micError}
+                </p>
+              )}
 
               <div className="flex items-center gap-2">
                 {status === "asking" && (
