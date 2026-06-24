@@ -56,6 +56,7 @@ app.use(
     "/api/extract",
     "/api/tasks/generate",
     "/api/interview/questions",
+    "/api/interview/turn",
   ],
   heavyLimiter,
 );
