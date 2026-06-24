@@ -3,7 +3,7 @@
 A mobile-first Progressive Web App that turns a messy job/internship hunt into a tracked, guided pipeline. Paste a posting URL, and AutoHired scrapes it, parses the requirements with AI, builds a personalized to-do checklist, stores your documents, and scores how well you match — with concrete suggestions to close the gaps.
 
 Design source: Stitch project **AutoHired AI Application Tracker** (exported HTML in `design/stitch/`).
-Roadmap: [`PROJECT_PHASES.md`](./PROJECT_PHASES.md) · Architecture: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
+Architecture: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 
 ---
 
@@ -94,4 +94,4 @@ npm run dev        # client http://localhost:5173 + server http://localhost:3001
 
 ## Status
 
-Phases 0–6 ✅ (scaffold, Supabase auth/schema, scraper, checklist, vault, AI matcher, PWA polish + hardening) and Phase 8 ✅ (editable profile with AI-matching personal info + avatar upload). Phase 7 deploy: code-ready; Vercel/Render deploy pending. See [`PROJECT_PHASES.md`](./PROJECT_PHASES.md).
+Core app complete — scaffold, Supabase auth/schema, scraper, checklist, vault, AI matcher, PWA polish + hardening, and editable profile (AI-matching personal info + avatar upload). Deploy (Vercel/Render) is code-ready; rollout pending.
