@@ -5,6 +5,7 @@ import {
   mockAnalysis,
   mockApplications,
   mockDocuments,
+  mockEvents,
   mockTasks,
 } from "../data/mock";
 import type { Application } from "../types";
@@ -84,6 +85,14 @@ export function useDocuments() {
   const { demoMode } = useAuth();
   return useAsync(
     () => (demoMode ? Promise.resolve(mockDocuments) : api.listDocuments()),
+    [demoMode],
+  );
+}
+
+export function useEvents() {
+  const { demoMode } = useAuth();
+  return useAsync(
+    () => (demoMode ? Promise.resolve(mockEvents) : api.listEvents()),
     [demoMode],
   );
 }
