@@ -20,3 +20,14 @@ export interface AIAnalysisResult {
   gaps: string[];
   strengths: string[];
 }
+
+export interface InterviewQuestion {
+  question: string;
+  category: string; // behavioral | technical | role | company | situational
+  tip: string; // what the interviewer is looking for / how to approach it
+  sampleAnswer: string; // a model answer framed around this applicant
+}
+
+export interface InterviewPrepResult {
+  questions: InterviewQuestion[];
+}
