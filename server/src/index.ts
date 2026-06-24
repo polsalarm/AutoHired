@@ -6,6 +6,7 @@ import { scrapeRouter } from "./routes/scrape.js";
 import { tasksRouter } from "./routes/tasks.js";
 import { extractRouter } from "./routes/extract.js";
 import { analyzeRouter } from "./routes/analyze.js";
+import { interviewRouter } from "./routes/interview.js";
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 3001);
@@ -49,7 +50,13 @@ app.get("/health", (_req, res) => {
 
 app.use("/api", apiLimiter);
 app.use(
-  ["/api/scrape", "/api/analyze", "/api/extract", "/api/tasks/generate"],
+  [
+    "/api/scrape",
+    "/api/analyze",
+    "/api/extract",
+    "/api/tasks/generate",
+    "/api/interview/questions",
+  ],
   heavyLimiter,
 );
 
@@ -57,6 +64,7 @@ app.use("/api", scrapeRouter);
 app.use("/api", tasksRouter);
 app.use("/api", extractRouter);
 app.use("/api", analyzeRouter);
+app.use("/api", interviewRouter);
 
 app.listen(PORT, () => {
   console.log(`AutoHired API listening on http://localhost:${PORT}`);
