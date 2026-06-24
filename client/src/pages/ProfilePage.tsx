@@ -77,6 +77,16 @@ export function ProfilePage() {
     setEditing(true);
   }
 
+  // Lock background scroll while the edit modal is open.
+  useEffect(() => {
+    if (!editing) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [editing]);
+
   async function save() {
     if (!user) return;
     setSaving(true);
@@ -268,17 +278,17 @@ export function ProfilePage() {
       {/* Edit modal */}
       {editing && (
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-4"
+          className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50 p-4 overscroll-none"
           onClick={() => !saving && setEditing(false)}
         >
           <div
-            className="bg-surface rounded-2xl shadow-level-2 w-full max-w-md max-h-[88vh] flex flex-col"
+            className="bg-surface rounded-2xl shadow-level-2 w-full max-w-md max-h-[88dvh] flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-container-margin border-b border-outline-variant/20">
+            <div className="p-container-margin border-b border-outline-variant/20 shrink-0">
               <h3 className="text-body-lg font-semibold text-on-surface">Edit Profile</h3>
             </div>
-            <div className="overflow-y-auto p-container-margin flex flex-col gap-stack-md">
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-container-margin flex flex-col gap-stack-md">
               <Field label="Name">
                 <input
                   value={draft.name}
@@ -376,7 +386,7 @@ export function ProfilePage() {
                 </div>
               </Field>
             </div>
-            <div className="flex gap-3 p-container-margin border-t border-outline-variant/20">
+            <div className="flex gap-3 p-container-margin border-t border-outline-variant/20 shrink-0">
               <button
                 onClick={() => setEditing(false)}
                 disabled={saving}
