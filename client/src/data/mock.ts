@@ -4,7 +4,15 @@ import type {
   VaultDocument,
   AIAnalysis,
   ProfileStats,
+  ScheduleEvent,
 } from "../types";
+
+const inDays = (d: number, h = 10): string => {
+  const date = new Date();
+  date.setDate(date.getDate() + d);
+  date.setHours(h, 0, 0, 0);
+  return date.toISOString();
+};
 
 /**
  * Phase 0 mock data mirroring the Stitch design screens.
@@ -150,6 +158,45 @@ export const mockAnalysis: AIAnalysis = {
   strengths: ["React", "JavaScript", "Hackathon experience"],
   createdAt: "2026-06-09T12:00:00Z",
 };
+
+export const mockEvents: ScheduleEvent[] = [
+  {
+    id: "event-1",
+    userId: "user-1",
+    applicationId: "app-2",
+    type: "interview",
+    title: "Vercel — Technical Interview",
+    startsAt: inDays(2, 14),
+    location: "Google Meet",
+    notes: "Round 2 · live coding (React + TS). Review hooks + Next.js routing.",
+    done: false,
+    createdAt: inDays(-1),
+  },
+  {
+    id: "event-2",
+    userId: "user-1",
+    applicationId: "app-1",
+    type: "call",
+    title: "Google — Recruiter Call",
+    startsAt: inDays(5, 11),
+    location: "Phone",
+    notes: "Intro call with recruiter about the SWE internship.",
+    done: false,
+    createdAt: inDays(-1),
+  },
+  {
+    id: "event-3",
+    userId: "user-1",
+    applicationId: "app-3",
+    type: "deadline",
+    title: "Figma — Application Deadline",
+    startsAt: inDays(-1, 23),
+    location: null,
+    notes: "Portfolio submission due.",
+    done: true,
+    createdAt: inDays(-3),
+  },
+];
 
 export const mockStats: ProfileStats = {
   applicationsSent: 142,
