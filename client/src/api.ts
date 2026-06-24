@@ -548,6 +548,68 @@ export async function generateInterviewQuestions(
   return questions ?? [];
 }
 
+export interface InterviewScorecard {
+  overall: number;
+  verdict: string;
+  summary: string;
+  strengths: string[];
+  improvements: string[];
+}
+
+export interface InterviewTurn {
+  feedback: string;
+  nextQuestion: string | null;
+  done: boolean;
+  scorecard: InterviewScorecard | null;
+}
+
+/**
+ * One turn of a live (voice) mock interview. Pass the full Q&A history each
+ * call; the server reacts to the last answer and asks the next question, or
+ * returns a scorecard once enough have been asked. `profile` is resolved once
+ * by the caller to avoid re-fetching every turn.
+ */
+export async function interviewTurn(
+  app: {
+    title: string;
+    company: string;
+    requirements: string[];
+    description: string;
+  },
+  history: { question: string; answer: string }[],
+  profile: string,
+  maxQuestions = 5,
+): Promise<InterviewTurn> {
+  const res = await fetch(apiUrl("/api/interview/turn"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      title: app.title,
+      company: app.company,
+      requirements: app.requirements,
+      description: app.description,
+      profile,
+      history,
+      maxQuestions,
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `Interview turn failed (${res.status})`);
+  }
+  return (await res.json()) as InterviewTurn;
+}
+
+/** Resolves a user's profile into the labeled text block AI routes expect. */
+export async function getProfileText(userId: string | undefined): Promise<string> {
+  if (!userId) return "";
+  try {
+    return profileToText(await getProfile(userId));
+  } catch {
+    return "";
+  }
+}
+
 // ---------- Schedule events ----------
 
 export interface EventInput {
