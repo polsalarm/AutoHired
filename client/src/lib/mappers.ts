@@ -1,6 +1,7 @@
 import type {
   AIAnalysis,
   Application,
+  ScheduleEvent,
   TaskItem,
   VaultDocument,
 } from "../types";
@@ -47,6 +48,21 @@ export function toDocument(r: Row): VaultDocument {
     parsedText: (r.parsed_text as string) ?? null,
     status: r.status as VaultDocument["status"],
     addedAt: r.added_at as string,
+  };
+}
+
+export function toEvent(r: Row): ScheduleEvent {
+  return {
+    id: r.id as string,
+    userId: r.user_id as string,
+    applicationId: (r.application_id as string) ?? null,
+    type: r.type as ScheduleEvent["type"],
+    title: r.title as string,
+    startsAt: r.starts_at as string,
+    location: (r.location as string) ?? null,
+    notes: (r.notes as string) ?? null,
+    done: Boolean(r.done),
+    createdAt: r.created_at as string,
   };
 }
 
