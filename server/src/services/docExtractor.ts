@@ -1,4 +1,3 @@
-import { PDFParse } from "pdf-parse";
 import mammoth from "mammoth";
 
 export interface ExtractResult {
@@ -21,6 +20,9 @@ export async function extractDocumentText(
   let text = "";
 
   if (mimetype === "application/pdf" || name.endsWith(".pdf")) {
+    // Lazy import: pdf-parse → pdfjs-dist touches browser globals (DOMMatrix)
+    // at load time, which crashes serverless cold-start if imported eagerly.
+    const { PDFParse } = await import("pdf-parse");
     const parser = new PDFParse({ data: new Uint8Array(buffer) });
     try {
       const result = await parser.getText();
