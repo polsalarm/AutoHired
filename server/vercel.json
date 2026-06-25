@@ -1,5 +1,4 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm install && (tsc --noEmitOnError false || true)",
   "functions": {
     "api/index.ts": { "maxDuration": 60 }
