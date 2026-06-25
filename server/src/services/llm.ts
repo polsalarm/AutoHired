@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import OpenAI from "openai";
+import { OpenAI } from "openai";
 
 /**
  * Single LLM gateway used by parse / task-gen / match.
@@ -50,13 +50,28 @@ function callProvider(provider: LlmProvider, prompt: string, opts: CallOpts): Pr
   return callAnthropic(prompt, opts);
 }
 
+/** Rejects if a provider call runs longer than the serverless budget allows. */
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`provider timed out after ${ms}ms`)), ms).unref?.(),
+    ),
+  ]);
+}
+
+// Hard ceiling per provider attempt — keeps the whole request under the
+// platform's function cap (Vercel Hobby = 60s) so a slow model falls through
+// to the next provider / heuristic instead of returning a 504.
+const PROVIDER_TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS ?? 45_000);
+
 export async function callLLM(prompt: string, opts: CallOpts = {}): Promise<string> {
   const chain = providerChain();
   if (chain.length === 0) throw new Error("No LLM provider configured");
   let lastErr: unknown;
   for (const provider of chain) {
     try {
-      return await callProvider(provider, prompt, opts);
+      return await withTimeout(callProvider(provider, prompt, opts), PROVIDER_TIMEOUT_MS);
     } catch (err) {
       lastErr = err;
       const msg = err instanceof Error ? err.message : String(err);
@@ -77,12 +92,21 @@ function openaiClientInstance(): OpenAI {
     // Empty → real OpenAI. Point at Groq / gpt-oss etc. to exercise this exact
     // code path for free; clear it at finals and only the key changes.
     baseURL: process.env.OPENAI_BASE_URL || undefined,
+    // Abort before the serverless 60s cap so a slow provider falls through to
+    // the next provider / heuristic instead of returning a 504.
+    timeout: 50_000,
+    maxRetries: 0,
   });
   return openaiClient;
 }
 
 async function callOpenAI(prompt: string, opts: CallOpts): Promise<string> {
-  const res = await openaiClientInstance().chat.completions.create({
+  // Reasoning models (gpt-oss, o-series) spend tokens "thinking" before output;
+  // OPENAI_REASONING_EFFORT=low keeps latency under the serverless cap. Sent
+  // only when set, since instruct-only models reject the field.
+  const reasoningEffort = process.env.OPENAI_REASONING_EFFORT;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const params: any = {
     model: process.env.OPENAI_MODEL ?? "gpt-4.1-mini",
     messages: [
       // json_object mode requires "json" to appear in the messages; this also
@@ -92,9 +116,11 @@ async function callOpenAI(prompt: string, opts: CallOpts): Promise<string> {
     ],
     // max_completion_tokens (not the deprecated max_tokens) so newer/reasoning
     // models accept it too. Temperature left at default for the same reason.
-    max_completion_tokens: opts.maxTokens ?? 4096,
+    max_completion_tokens: opts.maxTokens ?? 2048,
     response_format: { type: "json_object" },
-  });
+    ...(reasoningEffort ? { reasoning_effort: reasoningEffort } : {}),
+  };
+  const res = await openaiClientInstance().chat.completions.create(params);
   const text = res.choices[0]?.message?.content;
   if (!text) throw new Error("OpenAI returned no text");
   return text;
