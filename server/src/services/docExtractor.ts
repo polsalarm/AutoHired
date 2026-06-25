@@ -9,7 +9,8 @@ export interface ExtractResult {
 
 /**
  * Extracts plain text from an uploaded document buffer.
- * Supports PDF (pdf-parse v2), DOCX (mammoth), and UTF-8 text.
+ * Supports PDF (unpdf — serverless-safe, no DOM/canvas deps), DOCX (mammoth),
+ * and UTF-8 text.
  */
 export async function extractDocumentText(
   buffer: Buffer,
@@ -20,16 +21,13 @@ export async function extractDocumentText(
   let text = "";
 
   if (mimetype === "application/pdf" || name.endsWith(".pdf")) {
-    // Lazy import: pdf-parse → pdfjs-dist touches browser globals (DOMMatrix)
-    // at load time, which crashes serverless cold-start if imported eagerly.
-    const { PDFParse } = await import("pdf-parse");
-    const parser = new PDFParse({ data: new Uint8Array(buffer) });
-    try {
-      const result = await parser.getText();
-      text = result.text;
-    } finally {
-      await parser.destroy();
-    }
+    // unpdf ships a serverless build of pdfjs with no DOMMatrix/canvas needs,
+    // so PDF text extraction works on Vercel functions. Lazy-imported to keep
+    // cold start lean.
+    const { extractText, getDocumentProxy } = await import("unpdf");
+    const pdf = await getDocumentProxy(new Uint8Array(buffer));
+    const result = await extractText(pdf, { mergePages: true });
+    text = Array.isArray(result.text) ? result.text.join("\n") : result.text;
   } else if (
     name.endsWith(".docx") ||
     mimetype.includes("wordprocessingml")
