@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "../components/Icon";
 import { Avatar } from "../components/Avatar";
@@ -9,6 +9,7 @@ import {
   analyzeAndSave,
   deleteDocument,
   getDocumentUrl,
+  renameDocument,
   uploadAndExtract,
 } from "../api";
 import type { Application, DocumentType, VaultDocument } from "../types";
@@ -32,6 +33,28 @@ function relativeAge(iso: string): string {
   return `Added ${weeks} week${weeks > 1 ? "s" : ""} ago`;
 }
 
+const TYPE_LABEL: Record<DocumentType, string> = {
+  resume: "Resume",
+  cv: "CV",
+  cover_letter: "Cover letter",
+  portfolio: "Portfolio",
+};
+
+function fmtFullDate(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+/** File extension from the document name, upper-cased (e.g. "PDF"). */
+function fileExt(name: string): string {
+  return name.includes(".") ? name.split(".").pop()!.toUpperCase() : "FILE";
+}
+
 function detectType(name: string): DocumentType {
   if (/cover/i.test(name)) return "cover_letter";
   if (/portfolio/i.test(name)) return "portfolio";
@@ -45,36 +68,61 @@ function DocCard({
   busy,
   onDelete,
   onAnalyze,
+  onRename,
 }: {
   doc: VaultDocument;
   demoMode: boolean;
   busy: boolean;
   onDelete: (doc: VaultDocument) => void;
   onAnalyze: (doc: VaultDocument) => void;
+  onRename: (doc: VaultDocument, name: string) => Promise<void>;
 }) {
   const { icon, chip } = typeIcon[doc.type];
   const ready = doc.status === "analyzed";
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [details, setDetails] = useState<false | "view" | "rename">(false);
 
-  async function download() {
-    setMenuOpen(false);
+  async function openFile() {
     try {
       const url = await getDocumentUrl(doc.storagePath);
       window.open(url, "_blank", "noopener");
+    } catch (err) {
+      console.error("Open failed:", err);
+    }
+  }
+
+  async function download() {
+    try {
+      const url = await getDocumentUrl(doc.storagePath);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = doc.name;
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     } catch (err) {
       console.error("Download failed:", err);
     }
   }
 
   return (
-    <div className="bg-surface rounded-xl p-5 shadow-level-1 flex flex-col justify-between border border-outline-variant/30 relative overflow-hidden group">
-      <div className="absolute -right-8 -top-8 w-32 h-32 bg-primary-fixed opacity-20 rounded-full blur-2xl group-hover:bg-primary-container transition-colors" />
-      <div className="flex items-start justify-between mb-stack-md relative z-10">
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${chip}`}>
+    <div className="bg-surface rounded-xl p-5 shadow-level-1 flex flex-col justify-between border border-outline-variant/30 relative group">
+      {/* Decorative blob — clipped to its own rounded layer so it never bleeds
+          out, while the card itself does NOT clip (the menu can overflow). */}
+      <div className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
+        <div className="absolute -right-8 -top-8 w-32 h-32 bg-primary-fixed opacity-20 rounded-full blur-2xl group-hover:bg-primary-container transition-colors" />
+      </div>
+
+      <div className="flex items-start justify-between mb-stack-md relative z-20">
+        <button
+          onClick={() => setDetails("view")}
+          className="flex items-center gap-3 min-w-0 text-left"
+          title="View details"
+        >
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${chip}`}>
             <Icon name={icon} />
           </div>
-          <div>
+          <div className="min-w-0">
             <h4 className="text-body-md font-semibold text-on-surface truncate max-w-[180px]" title={doc.name}>
               {doc.name}
             </h4>
@@ -82,40 +130,17 @@ function DocCard({
               {relativeAge(doc.addedAt)}
             </span>
           </div>
-        </div>
-        <div className="relative">
-          <button
-            onClick={() => setMenuOpen((o) => !o)}
-            className="text-outline hover:text-on-surface transition-colors"
-            aria-label="More options"
-          >
-            <Icon name="more_vert" />
-          </button>
-          {menuOpen && (
-            <div className="absolute right-0 top-8 z-20 bg-surface-container-lowest rounded-lg shadow-level-2 border border-outline-variant/30 py-1 w-36">
-              <button
-                onClick={download}
-                disabled={demoMode}
-                className="w-full text-left px-3 py-2 text-body-md text-on-surface hover:bg-surface-container-low flex items-center gap-2 disabled:opacity-50"
-              >
-                <Icon name="download" size={18} />
-                Download
-              </button>
-              <button
-                onClick={() => {
-                  setMenuOpen(false);
-                  onDelete(doc);
-                }}
-                disabled={demoMode}
-                className="w-full text-left px-3 py-2 text-body-md text-error hover:bg-error-container/40 flex items-center gap-2 disabled:opacity-50"
-              >
-                <Icon name="delete" size={18} />
-                Delete
-              </button>
-            </div>
-          )}
-        </div>
+        </button>
+
+        <button
+          onClick={() => setDetails("view")}
+          className="w-9 h-9 -mr-2 -mt-1 shrink-0 rounded-full flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors"
+          aria-label="File options & details"
+        >
+          <Icon name="more_vert" />
+        </button>
       </div>
+
       <div className="flex items-center justify-between mt-auto relative z-10 pt-stack-sm border-t border-outline-variant/20">
         <div className="flex items-center gap-2">
           <span
@@ -139,6 +164,19 @@ function DocCard({
           Analyze
         </button>
       </div>
+
+      {details && (
+        <DocDetailsModal
+          doc={doc}
+          startEditing={details === "rename"}
+          demoMode={demoMode}
+          onClose={() => setDetails(false)}
+          onOpen={openFile}
+          onDownload={download}
+          onRename={onRename}
+          onDelete={onDelete}
+        />
+      )}
     </div>
   );
 }
@@ -194,6 +232,15 @@ export function VaultPage() {
     } catch (err) {
       setUploadError((err as Error).message);
     }
+  }
+
+  async function handleRename(doc: VaultDocument, name: string) {
+    if (demoMode || !user) {
+      setUploadError("Demo mode: configure Supabase to rename documents.");
+      return;
+    }
+    await renameDocument(doc.id, name);
+    reload();
   }
 
   async function runAnalysis(doc: VaultDocument, app: Application) {
@@ -290,6 +337,7 @@ export function VaultPage() {
             busy={analyzingId === doc.id}
             onDelete={handleDelete}
             onAnalyze={setPickFor}
+            onRename={handleRename}
           />
         ))}
       </section>
@@ -364,6 +412,209 @@ function ApplicationPicker({
           Cancel
         </button>
       </div>
+    </div>
+  );
+}
+
+function DocDetailsModal({
+  doc,
+  startEditing,
+  demoMode,
+  onClose,
+  onOpen,
+  onDownload,
+  onRename,
+  onDelete,
+}: {
+  doc: VaultDocument;
+  startEditing: boolean;
+  demoMode: boolean;
+  onClose: () => void;
+  onOpen: () => void;
+  onDownload: () => void;
+  onRename: (doc: VaultDocument, name: string) => Promise<void>;
+  onDelete: (doc: VaultDocument) => void;
+}) {
+  const { icon, chip } = typeIcon[doc.type];
+  const ready = doc.status === "analyzed";
+  const chars = doc.parsedText?.length ?? 0;
+  const [editing, setEditing] = useState(startEditing);
+  const [name, setName] = useState(doc.name);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
+  async function save() {
+    const next = name.trim();
+    if (!next || next === doc.name) {
+      setEditing(false);
+      setName(doc.name);
+      return;
+    }
+    setSaving(true);
+    setErr(null);
+    try {
+      await onRename(doc, next);
+      setEditing(false);
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50 p-4 overscroll-none"
+      onClick={() => !saving && onClose()}
+    >
+      <div
+        className="bg-surface rounded-2xl shadow-level-2 w-full max-w-md max-h-[88dvh] flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="p-container-margin flex items-start gap-3 border-b border-outline-variant/20">
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${chip}`}>
+            <Icon name={icon} size={26} />
+          </div>
+          <div className="min-w-0 flex-1">
+            {editing ? (
+              <input
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") save();
+                  if (e.key === "Escape") {
+                    setEditing(false);
+                    setName(doc.name);
+                  }
+                }}
+                className="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg h-10 px-3 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            ) : (
+              <h3 className="text-body-lg font-semibold text-on-surface break-words" title={doc.name}>
+                {doc.name}
+              </h3>
+            )}
+            <p className="text-label-sm text-on-surface-variant mt-0.5">
+              {fileExt(doc.name)} · {TYPE_LABEL[doc.type]}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container shrink-0"
+          >
+            <Icon name="close" size={18} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-container-margin flex flex-col gap-stack-md">
+          {editing ? (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={save}
+                disabled={saving}
+                className="flex-1 py-2.5 rounded-xl text-label-md bg-primary text-on-primary shadow-level-1 hover:bg-on-primary-fixed-variant active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                {saving && <Icon name="sync" size={16} className="animate-spin" />}
+                Save name
+              </button>
+              <button
+                onClick={() => {
+                  setEditing(false);
+                  setName(doc.name);
+                }}
+                disabled={saving}
+                className="py-2.5 px-4 rounded-xl text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setEditing(true)}
+              disabled={demoMode}
+              className="self-start text-label-md text-primary hover:bg-primary-fixed rounded-lg px-2 py-1 -ml-2 transition-colors flex items-center gap-1.5 disabled:opacity-40"
+            >
+              <Icon name="edit" size={16} />
+              Rename
+            </button>
+          )}
+          {err && <p className="text-label-md text-error -mt-1">{err}</p>}
+
+          <dl className="divide-y divide-outline-variant/15 rounded-xl bg-surface-container-low overflow-hidden">
+            <DetailRow label="Type" value={TYPE_LABEL[doc.type]} />
+            <DetailRow label="Status" value={ready ? "Text extracted" : "No text yet"} />
+            <DetailRow label="Added" value={fmtFullDate(doc.addedAt)} />
+          </dl>
+
+          {ready && doc.parsedText && (
+            <div>
+              <p className="text-label-sm text-on-surface-variant uppercase tracking-wide mb-1.5">
+                Text preview
+                <span className="text-outline normal-case tracking-normal">
+                  {" · "}
+                  {chars.toLocaleString()} characters
+                </span>
+              </p>
+              <p className="text-body-md text-on-surface-variant bg-surface-container-low rounded-xl p-3 max-h-40 overflow-y-auto whitespace-pre-line">
+                {doc.parsedText.slice(0, 600)}
+                {doc.parsedText.length > 600 ? "…" : ""}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer actions */}
+        <div className="flex items-center gap-2 p-container-margin border-t border-outline-variant/20">
+          <button
+            onClick={onOpen}
+            disabled={demoMode}
+            className="flex-1 py-2.5 rounded-xl text-label-md bg-surface-container-high text-on-surface hover:bg-surface-container transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40"
+          >
+            <Icon name="open_in_new" size={18} />
+            Open
+          </button>
+          <button
+            onClick={onDownload}
+            disabled={demoMode}
+            className="flex-1 py-2.5 rounded-xl text-label-md bg-surface-container-high text-on-surface hover:bg-surface-container transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40"
+          >
+            <Icon name="download" size={18} />
+            Download
+          </button>
+          <button
+            onClick={() => {
+              onClose();
+              onDelete(doc);
+            }}
+            disabled={demoMode}
+            aria-label="Delete document"
+            className="w-11 h-11 shrink-0 rounded-xl flex items-center justify-center text-error hover:bg-error-container/40 transition-colors disabled:opacity-40"
+          >
+            <Icon name="delete" size={18} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4 px-3.5 py-2.5">
+      <dt className="text-label-md text-on-surface-variant shrink-0">{label}</dt>
+      <dd className="text-body-md text-on-surface text-right break-words">{value}</dd>
     </div>
   );
 }
