@@ -49,6 +49,7 @@ AutoHired collapses that whole loop into one paste. Drop in a URL and it does th
 - **🧑‍💼 Profile that feeds the AI** — editable profile (summary, skills, experience, education, location, links) folded into every match + tailoring call. Custom avatar upload.
 - **🎙️ AI voice interview** — a spoken mock interview tailored to the role and your profile: the interviewer speaks each question (TTS), you answer out loud (STT), with per-turn feedback and a final scorecard (communication, relevance, confidence, structure). Browser Web Speech API — no extra keys. Text "practice questions" mode with model answers too.
 - **📅 Schedule + reminders** — track interviews, calls, meetings, deadlines; add any event to Google Calendar or download an `.ics` with a 1-hour reminder alarm. No push infra.
+- **📧 Gmail interview-email sync** — *(new)* one click scans your inbox for interview invites and scheduling emails (keyword + ATS-sender query), AI-extracts the **company, role, date/time, and meeting link**, and proposes events you **review, fix, and confirm** before anything is saved. Client-side Google OAuth (read-only); the server is **parse-and-discard** — raw email bodies never persist, only the extracted fields. Auto-links each event to a matching application.
 - **⏰ Deadline tracking** — auto-scraped or manual; days-left badges on the dashboard.
 - **📱 PWA** — installable, offline banner, skeleton loading states, reduced-motion support.
 - **🧪 Demo mode** — runs on mock data with no auth gate when Supabase isn't configured, so you can try it instantly.
@@ -73,6 +74,22 @@ AutoHired collapses that whole loop into one paste. Drop in a URL and it does th
 ```
 
 The **server is stateless** — it never touches user data. It scrapes URLs, extracts document text, and runs the AI pipeline. The **client owns all Supabase reads/writes**, each scoped to the signed-in user by Row-Level Security.
+
+### 🔁 AI fallback chain
+
+Every AI call goes through one gateway (`server/src/services/llm.ts`). Providers are tried in **priority order**, falling through to the next on **any** error — quota exhausted, 5xx, or a per-provider timeout. If the whole chain fails, the caller drops to an **offline heuristic** (rule-based parsing / templating), so the app never hard-fails on AI.
+
+```
+OpenAI-compatible  →  Vertex AI (Gemini)  →  Gemini API key  →  Anthropic  →  offline heuristic
+(Featherless gpt-oss)   (GCP credits)        (AI Studio free)    (Claude, paid)   (no keys)
+```
+
+- **Configured = enabled.** A provider joins the chain only if its env var is set (`OPENAI_API_KEY`, `VERTEX_PROJECT`, `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`). Set none → heuristic-only. Vertex and Gemini share a backend, so only one is listed (Vertex wins if both set).
+- **Per-provider hard timeout** (`LLM_TIMEOUT_MS`, default 45 000 ms) aborts a slow provider *before* the serverless function cap (Vercel Hobby = 60s), so a hang falls through instead of returning a 504.
+- **Why this order:** free OSS (`gpt-oss-20b`) first, then your GCP credits, then free Gemini tier, then paid Claude as a last resort — cheapest-first, with the deterministic heuristic underneath as the floor.
+- **Heuristic floor:** each caller (`aiParser`, `taskGenerator`, `jobMatcher`, …) ships a no-LLM path so parse / checklist / match still produce usable output when every provider is down or unconfigured.
+
+Each fall-through is logged (`[llm] <provider> failed (<msg>) — falling back to next provider`).
 
 ## 🧠 Design decisions — *why this, not that*
 
@@ -124,6 +141,7 @@ npm run dev        # client http://localhost:5173 + server http://localhost:3001
   - **Gemini API key** (AI Studio free tier): `GEMINI_API_KEY`.
   - **Anthropic** (paid): `ANTHROPIC_API_KEY`.
   - `LLM_TIMEOUT_MS` — per-provider hard timeout (default 45 000; keep under your function cap).
+- **Gmail sync (optional):** set `VITE_GOOGLE_CLIENT_ID` in `client/.env` to a Google Cloud OAuth 2.0 **Web** client ID to enable the Schedule page's "Sync Gmail" button (empty → button hidden). The `gmail.readonly` scope is **restricted**; while unverified, add yourself as a **test user** on the OAuth consent screen ("Testing" mode) — works instantly, no Google review. The server needs **no** extra key: the browser obtains a short-lived token and posts it per-scan; nothing is stored.
 
 ## 🔌 API
 
@@ -136,6 +154,7 @@ npm run dev        # client http://localhost:5173 + server http://localhost:3001
 | POST | `/api/tailor-resume` | résumé + profile + posting → **tailored résumé + cover letter (structured JSON) + changelog** |
 | POST | `/api/interview/questions` | role + profile → tailored practice questions with tips + model answers |
 | POST | `/api/interview/turn` | turn-based voice mock interview → per-turn feedback + next question, then a scorecard |
+| POST | `/api/gmail/scan` | Gmail access token → interview emails scanned + AI-extracted into **proposed events** (parse-and-discard, no bodies stored) |
 | GET | `/health` | liveness |
 
 ## 🛡️ Hardening
@@ -149,7 +168,7 @@ npm run dev        # client http://localhost:5173 + server http://localhost:3001
 
 Both halves run on Vercel as **separate projects**:
 
-- **Client** → project rooted at `client/` (`client/vercel.json`: Vite build, SPA rewrites). Build-time env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_URL` (= the API origin).
+- **Client** → project rooted at `client/` (`client/vercel.json`: Vite build, SPA rewrites). Build-time env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_URL` (= the API origin), and optionally `VITE_GOOGLE_CLIENT_ID` (enables Gmail sync). Add your deployed client origin to the Google OAuth client's **Authorized JavaScript origins**.
 - **Server** → project rooted at `server/` (`server/vercel.json` + `server/api/index.ts` wrap the Express app as one serverless function; all paths rewrite to it). Env: `OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_BASE_URL` (**with `/v1`**), `OPENAI_REASONING_EFFORT=low`, `LLM_TIMEOUT_MS`, `CLIENT_ORIGIN` (the client origin, for CORS), plus any other AI providers.
 
 ```bash
@@ -161,4 +180,4 @@ npx vercel --prod
 
 ## 📌 Status
 
-Live on Vercel (client + serverless API). **Complete:** scaffold, Supabase auth/schema, scraper, checklist, vault (PDF/DOCX/TXT via `unpdf`/`mammoth`) with view/rename/download/delete, AI matcher, editable AI-matching profile + avatar, **AI résumé + cover-letter tailoring with in-browser PDF export and Vault save**, full structural résumé editor, AI voice interview + scorecard, schedule with calendar reminders, PWA polish + hardening. Next on the roadmap (`docs/ADDITIONAL_FEATURES.md`): Gmail interview-email fetch.
+Live on Vercel (client + serverless API). **Complete:** scaffold, Supabase auth/schema, scraper, checklist, vault (PDF/DOCX/TXT via `unpdf`/`mammoth`) with view/rename/download/delete, AI matcher, editable AI-matching profile + avatar, **AI résumé + cover-letter tailoring with in-browser PDF export and Vault save**, full structural résumé editor, AI voice interview + scorecard, schedule with calendar reminders, **Gmail interview-email sync (scan → AI-extract → review → save)**, PWA polish + hardening. Roadmap (`docs/ADDITIONAL_FEATURES.md`): Gmail background auto-sync (v2), web-push reminders.
