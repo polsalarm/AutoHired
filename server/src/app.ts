@@ -19,10 +19,16 @@ const allowedOrigins = (process.env.CLIENT_ORIGIN ?? "http://localhost:5173")
   .split(",")
   .map((o) => o.trim())
   .filter(Boolean);
+// In dev, accept any localhost/127.0.0.1 origin regardless of port — Vite hops
+// ports (5173→5174→…) when one is taken, and hard-coding every port is brittle.
+const isProd = process.env.NODE_ENV === "production";
+const localhostRe = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 app.use(
   cors({
     origin: (origin, cb) =>
-      !origin || allowedOrigins.includes(origin)
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      (!isProd && localhostRe.test(origin))
         ? cb(null, true)
         : cb(new Error("Not allowed by CORS")),
   }),
