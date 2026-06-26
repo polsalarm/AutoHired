@@ -54,16 +54,16 @@ const s = StyleSheet.create({
   bulletDot: { width: 10, color: ACCENT },
   bulletText: { flex: 1 },
   skillsWrap: { flexDirection: "row", flexWrap: "wrap", marginTop: 2 },
+  // Chip = a View box (sizes to content, no overlap) wrapping the label Text.
   skill: {
-    fontSize: 9,
     backgroundColor: "#eef2f7",
-    color: ACCENT,
     borderRadius: 3,
-    paddingVertical: 2,
-    paddingHorizontal: 6,
+    paddingVertical: 3,
+    paddingHorizontal: 7,
     marginRight: 5,
     marginBottom: 5,
   },
+  skillText: { fontSize: 9, color: ACCENT },
   eduRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 6 },
   eduDetail: { color: MUTED, fontSize: 9, marginTop: 1 },
   // Cover letter
@@ -117,9 +117,9 @@ export function ResumeDocument({ resume }: { resume: TailoredResume }) {
             <Text style={s.sectionTitle}>Skills</Text>
             <View style={s.skillsWrap}>
               {resume.skills.map((sk, i) => (
-                <Text key={`${sk}-${i}`} style={s.skill}>
-                  {sk}
-                </Text>
+                <View key={`${sk}-${i}`} style={s.skill}>
+                  <Text style={s.skillText}>{sk}</Text>
+                </View>
               ))}
             </View>
           </View>
