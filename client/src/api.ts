@@ -14,6 +14,7 @@ import type {
   EventType,
   InterviewQuestion,
   ProfileStats,
+  ProposedEvent,
   ResumeTailorResult,
   ScheduleEvent,
   ScrapedJob,
@@ -714,6 +715,30 @@ export async function createEvent(
     .single();
   if (error) throw error;
   return toEvent(data);
+}
+
+/**
+ * Sends a short-lived Gmail access token to the server, which scans recent
+ * interview emails and returns proposed events for review. The token is used
+ * for this one request only; raw email bodies are parsed-and-discarded server-
+ * side. `profile` helps the AI tell the candidate apart from the interviewer.
+ */
+export async function scanGmail(
+  accessToken: string,
+  userId?: string,
+): Promise<ProposedEvent[]> {
+  const profile = await getProfileText(userId);
+  const res = await fetch(apiUrl("/api/gmail/scan"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ accessToken, profile }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `Gmail scan failed (${res.status})`);
+  }
+  const { events } = (await res.json()) as { events: ProposedEvent[] };
+  return events ?? [];
 }
 
 export async function setEventDone(id: string, done: boolean): Promise<void> {
