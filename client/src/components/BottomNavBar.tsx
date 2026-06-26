@@ -4,8 +4,8 @@ import { Icon } from "./Icon";
 const tabs = [
   { to: "/", icon: "home", label: "Home" },
   { to: "/tasks", icon: "checklist", label: "Tasks" },
-  { to: "/schedule", icon: "event", label: "Schedule" },
   { to: "/vault", icon: "inventory_2", label: "Vault" },
+  { to: "/schedule", icon: "event", label: "Schedule" },
   { to: "/profile", icon: "person", label: "Profile" },
 ];
 
