@@ -69,6 +69,26 @@ export interface InterviewTurnResult {
   scorecard: InterviewScorecard | null; // present only when done
 }
 
+// ---------- Gmail → proposed schedule events ----------
+
+export type ScheduleEventType = "interview" | "meeting" | "call" | "deadline";
+
+/**
+ * An event the AI extracted from an interview/scheduling email, proposed to the
+ * user for review before it's saved. Raw email bodies are parsed-and-discarded —
+ * only these extracted fields ever leave the server.
+ */
+export interface ProposedEvent {
+  type: ScheduleEventType;
+  title: string; // e.g. "Interview — Acme (Frontend Engineer)"
+  company: string;
+  role: string;
+  startsAt: string | null; // ISO 8601; null when no concrete time was stated
+  location: string | null; // meeting link or place
+  notes: string | null;
+  sourceSubject: string; // originating email subject, for the user's context only
+}
+
 // ---------- Tailored resume + cover letter ----------
 
 /** One job in a tailored resume. */
