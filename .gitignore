@@ -7,3 +7,7 @@ dev-dist/
 *.log
 .DS_Store
 bash.exe.stackdump
+
+# Local artifacts / personal docs — never commit
+/image.png
+/*.pdf
