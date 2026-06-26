@@ -133,6 +133,21 @@ export interface ResumeTailorResult {
 
 export type EventType = "interview" | "meeting" | "call" | "deadline";
 
+/**
+ * An event the AI extracted from an interview email (Gmail scan), proposed to
+ * the user for review before saving. Mirrors server/src/types.ts.
+ */
+export interface ProposedEvent {
+  type: EventType;
+  title: string;
+  company: string;
+  role: string;
+  startsAt: string | null; // ISO 8601; null when no concrete time was stated
+  location: string | null;
+  notes: string | null;
+  sourceSubject: string; // originating email subject, for the user's context
+}
+
 /** A scheduled event tied (optionally) to an application — so nothing slips. */
 export interface ScheduleEvent {
   id: string;
