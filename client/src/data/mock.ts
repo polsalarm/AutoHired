@@ -4,6 +4,7 @@ import type {
   VaultDocument,
   AIAnalysis,
   ProfileStats,
+  ProposedEvent,
   ScheduleEvent,
 } from "../types";
 
@@ -215,6 +216,40 @@ export const mockEvents: ScheduleEvent[] = [
     notes: "Portfolio submission due.",
     done: true,
     createdAt: inDays(-3),
+  },
+];
+
+/** Sample Gmail-scan results — lets the review-and-confirm flow run in demo mode. */
+export const mockProposedEvents: ProposedEvent[] = [
+  {
+    type: "interview",
+    title: "Interview — Vercel (Frontend Engineer Intern)",
+    company: "Vercel",
+    role: "Frontend Engineer Intern",
+    startsAt: inDays(4, 15),
+    location: "https://meet.google.com/abc-defg-hij",
+    notes: "Round 2 · 45 min · live coding with the platform team.",
+    sourceSubject: "Your interview with Vercel — Thursday 3:00 PM",
+  },
+  {
+    type: "call",
+    title: "Call — Stripe (New Grad SWE)",
+    company: "Stripe",
+    role: "New Grad SWE",
+    startsAt: inDays(2, 10),
+    location: "Phone",
+    notes: "Recruiter screen to discuss the role and timeline.",
+    sourceSubject: "Scheduling a quick call about your application",
+  },
+  {
+    type: "interview",
+    title: "Interview — Linear (Product Engineer)",
+    company: "Linear",
+    role: "Product Engineer",
+    startsAt: null,
+    location: null,
+    notes: "They proposed 'sometime next week' — confirm a slot.",
+    sourceSubject: "Next steps — let's find a time",
   },
 ];
 
