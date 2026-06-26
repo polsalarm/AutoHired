@@ -82,6 +82,55 @@ export interface InterviewQuestion {
   sampleAnswer: string;
 }
 
+// ---------- Tailored resume + cover letter ----------
+// Mirrors server/src/types.ts — keep in sync.
+
+export interface ResumeExperience {
+  role: string;
+  company: string;
+  location: string;
+  period: string;
+  bullets: string[];
+}
+
+export interface ResumeEducation {
+  degree: string;
+  institution: string;
+  period: string;
+  detail: string;
+}
+
+/** A resume rewritten to target one specific application. */
+export interface TailoredResume {
+  name: string;
+  headline: string;
+  contact: {
+    email: string;
+    phone: string;
+    location: string;
+    links: string[];
+  };
+  summary: string;
+  skills: string[];
+  experience: ResumeExperience[];
+  education: ResumeEducation[];
+}
+
+/** A cover letter written for one specific application. */
+export interface CoverLetter {
+  greeting: string;
+  body: string[];
+  closing: string;
+  signature: string;
+}
+
+/** Result of tailoring a resume + cover letter to an application. */
+export interface ResumeTailorResult {
+  resume: TailoredResume;
+  coverLetter: CoverLetter;
+  changelog: string[];
+}
+
 export type EventType = "interview" | "meeting" | "call" | "deadline";
 
 /** A scheduled event tied (optionally) to an application — so nothing slips. */
