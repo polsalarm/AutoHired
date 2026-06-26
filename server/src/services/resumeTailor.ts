@@ -68,7 +68,7 @@ ${requirements.map((r) => `- ${r}`).join("\n") || "- (none captured)"}
 
 Applicant's current resume:
 ${resumeText.slice(0, 10_000)}${profileBlock}`,
-    { maxTokens: 8_000 },
+    { maxTokens: 5_000 },
   );
   const parsed = parseJson<Partial<RawResult>>(raw);
   const result = normalizeResult(parsed, input);
