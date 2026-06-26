@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import { pdf } from "@react-pdf/renderer";
 import { Icon } from "./Icon";
-import { CoverLetterDocument, ResumeDocument } from "./pdf/ResumePdf";
 import { listDocuments, tailorResume, uploadDocument } from "../api";
 import type {
   CoverLetter,
@@ -21,11 +19,6 @@ function usableResumes(docs: VaultDocument[]): VaultDocument[] {
 
 function safeName(s: string): string {
   return (s || "document").replace(/[^\w.-]+/g, "_").slice(0, 60);
-}
-
-async function pdfFile(node: React.ReactElement, filename: string): Promise<File> {
-  const blob = await pdf(node).toBlob();
-  return new File([blob], filename, { type: "application/pdf" });
 }
 
 function triggerDownload(file: File) {
@@ -131,24 +124,13 @@ export function ResumeBuilder({
   function coverName() {
     return `${safeName(result!.coverLetter.signature)}_${safeName(appInfo.company)}_CoverLetter.pdf`;
   }
-  function resumeNode() {
-    return <ResumeDocument resume={result!.resume} />;
-  }
-  function coverNode() {
-    return (
-      <CoverLetterDocument
-        letter={result!.coverLetter}
-        company={appInfo.company}
-        role={appInfo.title}
-      />
-    );
-  }
 
   async function downloadResume() {
     if (!result) return;
     setDownloading("resume");
     try {
-      triggerDownload(await pdfFile(resumeNode(), resumeName()));
+      const { buildResumeFile } = await import("./pdf/render");
+      triggerDownload(await buildResumeFile(result.resume, resumeName()));
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -160,7 +142,15 @@ export function ResumeBuilder({
     if (!result) return;
     setDownloading("cover");
     try {
-      triggerDownload(await pdfFile(coverNode(), coverName()));
+      const { buildCoverLetterFile } = await import("./pdf/render");
+      triggerDownload(
+        await buildCoverLetterFile(
+          result.coverLetter,
+          appInfo.company,
+          appInfo.title,
+          coverName(),
+        ),
+      );
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -175,9 +165,15 @@ export function ResumeBuilder({
     setSavedMsg(null);
     setError(null);
     try {
-      const resumeFile = await pdfFile(resumeNode(), resumeName());
+      const { buildResumeFile, buildCoverLetterFile } = await import("./pdf/render");
+      const resumeFile = await buildResumeFile(result.resume, resumeName());
       await uploadDocument(userId, resumeFile, "resume", resumeToText(result.resume));
-      const coverFile = await pdfFile(coverNode(), coverName());
+      const coverFile = await buildCoverLetterFile(
+        result.coverLetter,
+        appInfo.company,
+        appInfo.title,
+        coverName(),
+      );
       await uploadDocument(
         userId,
         coverFile,
