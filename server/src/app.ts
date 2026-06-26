@@ -7,6 +7,7 @@ import { tasksRouter } from "./routes/tasks.js";
 import { extractRouter } from "./routes/extract.js";
 import { analyzeRouter } from "./routes/analyze.js";
 import { interviewRouter } from "./routes/interview.js";
+import { tailorRouter } from "./routes/tailor.js";
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.use(
     "/api/tasks/generate",
     "/api/interview/questions",
     "/api/interview/turn",
+    "/api/tailor-resume",
   ],
   heavyLimiter,
 );
@@ -65,5 +67,6 @@ app.use("/api", tasksRouter);
 app.use("/api", extractRouter);
 app.use("/api", analyzeRouter);
 app.use("/api", interviewRouter);
+app.use("/api", tailorRouter);
 
 export { app };
