@@ -8,6 +8,7 @@ import { extractRouter } from "./routes/extract.js";
 import { analyzeRouter } from "./routes/analyze.js";
 import { interviewRouter } from "./routes/interview.js";
 import { tailorRouter } from "./routes/tailor.js";
+import { gmailRouter } from "./routes/gmail.js";
 
 const app = express();
 
@@ -64,6 +65,7 @@ app.use(
     "/api/interview/questions",
     "/api/interview/turn",
     "/api/tailor-resume",
+    "/api/gmail/scan",
   ],
   heavyLimiter,
 );
@@ -74,5 +76,6 @@ app.use("/api", extractRouter);
 app.use("/api", analyzeRouter);
 app.use("/api", interviewRouter);
 app.use("/api", tailorRouter);
+app.use("/api", gmailRouter);
 
 export { app };
