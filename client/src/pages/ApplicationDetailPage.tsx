@@ -296,6 +296,7 @@ export function ApplicationDetailPage() {
             description: app.description,
           }}
           userId={user?.id}
+          demoMode={demoMode}
         />
 
         {/* AI interview practice — tailored to this role + the user's profile */}
