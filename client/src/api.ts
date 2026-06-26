@@ -409,6 +409,12 @@ export async function deleteDocument(
   if (error) throw error;
 }
 
+/** Renames a document (owner-only via RLS). Storage path is unchanged. */
+export async function renameDocument(id: string, name: string): Promise<void> {
+  const { error } = await db().from("documents").update({ name }).eq("id", id);
+  if (error) throw error;
+}
+
 // ---------- Analyses ----------
 
 interface AnalysisResult {
