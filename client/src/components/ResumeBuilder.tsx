@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Icon } from "./Icon";
+import { ResumeEditor } from "./ResumeEditor";
 import { listDocuments, tailorResume, uploadDocument } from "../api";
 import type {
   CoverLetter,
@@ -84,6 +85,7 @@ export function ResumeBuilder({
   const [downloading, setDownloading] = useState<"resume" | "cover" | null>(null);
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -107,6 +109,7 @@ export function ResumeBuilder({
     setLoading(true);
     setError(null);
     setSavedMsg(null);
+    setEditing(false);
     try {
       const res = await tailorResume(userId, appInfo, doc.parsedText);
       setResult(res);
@@ -203,13 +206,26 @@ export function ResumeBuilder({
           </p>
         </div>
         {result && !loading && (
-          <button
-            onClick={generate}
-            className="text-label-md text-primary hover:bg-primary-fixed rounded-lg px-3 py-1.5 transition-colors flex items-center gap-1 shrink-0"
-          >
-            <Icon name="refresh" size={16} />
-            Regenerate
-          </button>
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={() => setEditing((v) => !v)}
+              className={`text-label-md rounded-lg px-3 py-1.5 transition-colors flex items-center gap-1 ${
+                editing
+                  ? "bg-primary text-on-primary"
+                  : "text-primary hover:bg-primary-fixed"
+              }`}
+            >
+              <Icon name={editing ? "check" : "edit"} size={16} />
+              {editing ? "Done" : "Edit"}
+            </button>
+            <button
+              onClick={generate}
+              className="text-label-md text-primary hover:bg-primary-fixed rounded-lg px-3 py-1.5 transition-colors flex items-center gap-1"
+            >
+              <Icon name="refresh" size={16} />
+              Regenerate
+            </button>
+          </div>
         )}
       </div>
 
@@ -276,10 +292,12 @@ export function ResumeBuilder({
         </div>
       )}
 
-      {/* Result: changelog + downloads */}
+      {/* Result: changelog + (optional) editor + downloads */}
       {result && !loading && (
         <div className="mt-stack-md flex flex-col gap-stack-md">
-          {result.changelog.length > 0 && (
+          {editing && <ResumeEditor value={result} onChange={setResult} />}
+
+          {!editing && result.changelog.length > 0 && (
             <div>
               <h4 className="text-label-md text-secondary font-semibold mb-2 flex items-center gap-1">
                 <Icon name="edit_note" size={18} /> What changed for this role
