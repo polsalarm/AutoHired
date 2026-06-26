@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Icon } from "./Icon";
 import { ResumeEditor } from "./ResumeEditor";
-import { listDocuments, tailorResume, uploadDocument } from "../api";
+import { useDocuments } from "../hooks/useData";
+import { tailorResume, uploadDocument } from "../api";
 import type {
   CoverLetter,
   ResumeTailorResult,
@@ -78,7 +79,12 @@ export function ResumeBuilder({
   userId: string | undefined;
   demoMode?: boolean;
 }) {
-  const [docs, setDocs] = useState<VaultDocument[] | null>(null);
+  // Demo-aware document load — mock docs in demo, live Supabase otherwise.
+  const { data: allDocs, error: docsError } = useDocuments();
+  const docs = useMemo<VaultDocument[] | null>(
+    () => (allDocs ? usableResumes(allDocs) : null),
+    [allDocs],
+  );
   const [selectedId, setSelectedId] = useState<string>("");
   const [result, setResult] = useState<ResumeTailorResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -88,20 +94,10 @@ export function ResumeBuilder({
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Default the picker to the first usable resume once docs arrive.
   useEffect(() => {
-    let alive = true;
-    listDocuments()
-      .then((all) => {
-        if (!alive) return;
-        const usable = usableResumes(all);
-        setDocs(usable);
-        if (usable.length > 0) setSelectedId(usable[0].id);
-      })
-      .catch((e) => alive && setError((e as Error).message));
-    return () => {
-      alive = false;
-    };
-  }, []);
+    if (docs && docs.length > 0 && !selectedId) setSelectedId(docs[0].id);
+  }, [docs, selectedId]);
 
   async function generate() {
     const doc = docs?.find((d) => d.id === selectedId);
@@ -229,10 +225,10 @@ export function ResumeBuilder({
         )}
       </div>
 
-      {error && (
+      {(error || docsError) && (
         <p className="text-body-md text-error py-3 flex items-center gap-2">
           <Icon name="error" size={18} />
-          {error}
+          {error || docsError}
         </p>
       )}
 
