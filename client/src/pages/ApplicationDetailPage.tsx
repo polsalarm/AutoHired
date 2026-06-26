@@ -7,6 +7,7 @@ import { useAnalysis, useApplication } from "../hooks/useData";
 import { useAuth } from "../auth/AuthContext";
 import { Checklist } from "../components/Checklist";
 import { InterviewPractice } from "../components/InterviewPractice";
+import { ResumeBuilder } from "../components/ResumeBuilder";
 import {
   deleteApplication,
   updateApplicationDeadline,
@@ -284,6 +285,17 @@ export function ApplicationDetailPage() {
           }}
           userId={user?.id}
           demoMode={demoMode}
+        />
+
+        {/* AI resume + cover letter tailored to this role, downloadable as PDF */}
+        <ResumeBuilder
+          appInfo={{
+            title: app.title,
+            company: app.company,
+            requirements: app.requirements,
+            description: app.description,
+          }}
+          userId={user?.id}
         />
 
         {/* AI interview practice — tailored to this role + the user's profile */}
