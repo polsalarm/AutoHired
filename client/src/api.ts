@@ -14,6 +14,7 @@ import type {
   EventType,
   InterviewQuestion,
   ProfileStats,
+  ResumeTailorResult,
   ScheduleEvent,
   ScrapedJob,
   TaskItem,
@@ -548,12 +549,70 @@ export async function generateInterviewQuestions(
   return questions ?? [];
 }
 
+// ---------- Tailored resume + cover letter ----------
+
+/**
+ * Tailors a resume + drafts a cover letter for a specific application. Folds in
+ * the user's profile so the AI can confirm details and fill gaps. Stateless —
+ * the client renders the PDFs and may save them to the Vault itself.
+ */
+export async function tailorResume(
+  userId: string | undefined,
+  app: {
+    title: string;
+    company: string;
+    requirements: string[];
+    description: string;
+  },
+  resumeText: string,
+): Promise<ResumeTailorResult> {
+  let profile = "";
+  if (userId) {
+    try {
+      profile = profileToText(await getProfile(userId));
+    } catch {
+      // Non-fatal: tailor from the resume alone if the profile can't be read.
+    }
+  }
+  const res = await fetch(apiUrl("/api/tailor-resume"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      title: app.title,
+      company: app.company,
+      requirements: app.requirements,
+      description: app.description,
+      resumeText,
+      profile,
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `Resume tailoring failed (${res.status})`);
+  }
+  return (await res.json()) as ResumeTailorResult;
+}
+
+export interface ScorecardMetrics {
+  communication: number;
+  relevance: number;
+  confidence: number;
+  structure: number;
+}
+
+export interface ScorecardDetail {
+  question: string;
+  feedback: string;
+}
+
 export interface InterviewScorecard {
   overall: number;
   verdict: string;
   summary: string;
+  metrics: ScorecardMetrics;
   strengths: string[];
   improvements: string[];
+  detailed: ScorecardDetail[];
 }
 
 export interface InterviewTurn {
