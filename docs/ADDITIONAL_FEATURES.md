@@ -50,10 +50,20 @@ So interviews and meetings never get forgotten.
 
 ---
 
-## Feature C — Gmail → auto-fetch interview emails
+## Feature C — Gmail → auto-fetch interview emails ✅ (MVP built)
 
 Closes the loop: an interview email arrives → AutoHired proposes the event so the
 user can't miss it. Heaviest feature — do last.
+
+**Shipped (MVP):** "Sync Gmail" on the Schedule page → client-side GIS OAuth
+(`client/src/lib/gmailAuth.ts`) → `POST /api/gmail/scan { accessToken }`
+(`server/src/routes/gmail.ts` + `server/src/services/emailParser.ts`) fetches
+recent interview/ATS emails, the LLM extracts `{ type, company, role, startsAt,
+location }` (heuristic fallback when no provider), and a review-and-confirm
+modal lets the user edit/deselect before saving to the `events` table. Stateless
++ parse-and-discard: no refresh token stored, no raw bodies persisted. Set
+`VITE_GOOGLE_CLIENT_ID` to enable. **Remaining for v2:** background auto-sync
+(stored encrypted refresh token + Gmail `watch`/poll).
 
 ### Constraints (read first)
 - **OAuth + scope.** Needs a Google Cloud OAuth 2.0 Client + consent screen,
