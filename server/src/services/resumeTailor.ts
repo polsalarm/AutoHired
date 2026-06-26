@@ -38,7 +38,7 @@ async function tailorWithLLM(input: TailorInput): Promise<ResumeTailorResult> {
     ? `\n\nApplicant profile (self-reported — use to fill gaps and confirm details):\n${profile.slice(0, 3_000)}`
     : "";
   const raw = await callLLM(
-    `You are an expert resume writer. Rewrite the applicant's resume to target the SPECIFIC role below, and draft a matching one-page cover letter. Surface the experience and skills most relevant to this role, mirror the role's language where the applicant genuinely matches it, and quantify impact in bullets where the source supports it. NEVER invent employers, degrees, dates, or facts the applicant did not provide — only re-emphasize and rephrase real content. Respond with ONLY a JSON object, no markdown fences:
+    `You are an expert resume writer. Rewrite the applicant's resume to target the SPECIFIC role below, and draft a matching one-page cover letter. Surface the experience and skills most relevant to this role, mirror the role's language where the applicant genuinely matches it, and quantify impact in bullets where the source supports it. NEVER invent employers, degrees, dates, or facts the applicant did not provide — only re-emphasize and rephrase real content. CRITICAL: if a job's employer name, location, or dates are not present in the source, set that exact field to an empty string "" — do NOT substitute a generic placeholder (e.g. "Various Roles", "Software Development Roles") and do NOT infer or guess dates. Same for education. An empty field is always better than an invented one. Respond with ONLY a JSON object, no markdown fences:
 
 {
   "resume": {
