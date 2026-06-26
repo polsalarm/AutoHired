@@ -4,6 +4,8 @@ import type {
   InterviewQuestion,
   InterviewScorecard,
   InterviewTurnResult,
+  ScorecardDetail,
+  ScorecardMetrics,
 } from "../types.js";
 import { callLLM, hasLLM, parseJson } from "./llm.js";
 
@@ -139,27 +141,66 @@ ${transcript(history)}`,
 async function evaluateWithLLM(input: TurnInput): Promise<InterviewTurnResult> {
   const { title, company, history } = input;
   const raw = await callLLM(
-    `You are an interviewer scoring a completed mock interview for ${title} at ${company}. Evaluate the candidate from the full transcript. Be fair and specific. Respond with ONLY JSON, no markdown fences:
+    `You are an interviewer scoring a completed mock interview for ${title} at ${company}. Evaluate the candidate from the full transcript. Be fair and specific. Score four distinct dimensions independently (they should NOT all be the same number): communication (clarity & articulation), relevance (how well answers fit the role & question), confidence (conviction & ownership), structure (use of frameworks like STAR, logical flow). Respond with ONLY JSON, no markdown fences:
 
-{ "overall": number (0-100), "verdict": string (2-3 words, e.g. "Strong Candidate"), "summary": string (2-3 sentences of overall assessment), "strengths": string[] (2-4 things they did well), "improvements": string[] (2-4 concrete things to work on) }
+{ "overall": number (0-100), "verdict": string (2-3 words, e.g. "Strong Candidate"), "summary": string (2-3 sentences of overall assessment), "metrics": { "communication": number (0-100), "relevance": number (0-100), "confidence": number (0-100), "structure": number (0-100) }, "strengths": string[] (2-4 things they did well), "improvements": string[] (2-4 concrete things to work on), "detailed": [ { "question": string (the question, shortened is fine), "feedback": string (1-2 sentences specific to how they answered THAT question) } ] (one entry per answered question) }
 
 Transcript:
 ${transcript(history)}`,
-    { maxTokens: 3_000 },
+    { maxTokens: 3_500 },
   );
   const parsed = parseJson<Partial<InterviewScorecard>>(raw);
-  return { feedback: "", nextQuestion: null, done: true, scorecard: normalizeScorecard(parsed) };
+  return {
+    feedback: "",
+    nextQuestion: null,
+    done: true,
+    scorecard: normalizeScorecard(parsed, history),
+  };
 }
 
-function normalizeScorecard(p: Partial<InterviewScorecard>): InterviewScorecard {
+function normalizeScorecard(
+  p: Partial<InterviewScorecard>,
+  history: InterviewQA[],
+): InterviewScorecard {
   const overall = clampScore(p.overall);
   return {
     overall,
     verdict: typeof p.verdict === "string" && p.verdict.trim() ? p.verdict.trim() : verdictForScore(overall),
     summary: typeof p.summary === "string" ? p.summary.trim() : "",
+    metrics: normalizeMetrics(p.metrics, overall),
     strengths: strArr(p.strengths),
     improvements: strArr(p.improvements),
+    detailed: normalizeDetailed(p.detailed, history),
   };
+}
+
+/** Coerce metrics, defaulting any missing dimension to the overall score. */
+function normalizeMetrics(m: unknown, overall: number): ScorecardMetrics {
+  const o = (m ?? {}) as Partial<Record<keyof ScorecardMetrics, unknown>>;
+  const pick = (v: unknown) => (v === undefined || v === null ? overall : clampScore(v));
+  return {
+    communication: pick(o.communication),
+    relevance: pick(o.relevance),
+    confidence: pick(o.confidence),
+    structure: pick(o.structure),
+  };
+}
+
+/** Coerce per-question feedback; fall back to the asked questions if absent. */
+function normalizeDetailed(d: unknown, history: InterviewQA[]): ScorecardDetail[] {
+  if (Array.isArray(d)) {
+    const items = d
+      .filter((x): x is Record<string, unknown> => !!x && typeof x === "object")
+      .map((x) => ({
+        question: typeof x.question === "string" ? x.question.trim() : "",
+        feedback: typeof x.feedback === "string" ? x.feedback.trim() : "",
+      }))
+      .filter((x) => x.question || x.feedback);
+    if (items.length) return items;
+  }
+  return history
+    .filter((qa) => qa.answer.trim())
+    .map((qa) => ({ question: qa.question, feedback: "" }));
 }
 
 /** Offline next-question fallback: walk the template questions by index. */
@@ -181,6 +222,8 @@ function evaluateFallback(input: TurnInput): InterviewTurnResult {
     answers.reduce((n, qa) => n + qa.answer.trim().split(/\s+/).length, 0) /
     (answers.length || 1);
   const overall = clampScore(40 + Math.min(40, avgWords * 1.5) + answers.length * 4);
+  // Spread the heuristic into believable-but-distinct sub-scores around overall.
+  const jitter = (delta: number) => clampScore(overall + delta);
   return {
     feedback: "",
     nextQuestion: null,
@@ -189,8 +232,20 @@ function evaluateFallback(input: TurnInput): InterviewTurnResult {
       overall,
       verdict: verdictForScore(overall),
       summary: `You answered ${answers.length} of ${input.history.length} questions. (Heuristic estimate — connect an AI provider for a detailed evaluation.)`,
+      metrics: {
+        communication: jitter(avgWords > 40 ? 5 : -5),
+        relevance: jitter(0),
+        confidence: jitter(answers.length === input.history.length ? 4 : -8),
+        structure: jitter(-6),
+      },
       strengths: answers.length ? ["Completed the interview", "Engaged with each question"] : [],
       improvements: ["Use the STAR format", "Add specific, quantified examples", "Tie answers back to the role"],
+      detailed: input.history
+        .filter((qa) => qa.answer.trim())
+        .map((qa) => ({
+          question: qa.question,
+          feedback: `${qa.answer.trim().split(/\s+/).length} words — aim for a concrete, structured example.`,
+        })),
     },
   };
 }
