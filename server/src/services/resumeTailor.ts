@@ -52,7 +52,7 @@ async function tailorWithLLM(input: TailorInput): Promise<ResumeTailorResult> {
   },
   "coverLetter": {
     "greeting": string (e.g. "Dear Hiring Manager,"),
-    "body": string[] (3-4 paragraphs: hook + why this role, relevant proof, fit/closing),
+    "body": string[] — a JSON array of 3-4 SEPARATE paragraph strings (one paragraph per array item; NEVER a single combined string): hook + why this role, relevant proof, fit/closing,
     "closing": string (e.g. "Sincerely,"),
     "signature": string (applicant name)
   },
@@ -68,7 +68,9 @@ ${requirements.map((r) => `- ${r}`).join("\n") || "- (none captured)"}
 
 Applicant's current resume:
 ${resumeText.slice(0, 10_000)}${profileBlock}`,
-    { maxTokens: 5_000 },
+    // Generous cap so the JSON tail (cover letter + changelog) is never truncated.
+    // Latency is model-bound, not output-bound, so a higher cap costs ~nothing.
+    { maxTokens: 7_000 },
   );
   const parsed = parseJson<Partial<RawResult>>(raw);
   const result = normalizeResult(parsed, input);
@@ -125,7 +127,7 @@ function normalizeResult(p: Partial<RawResult>, input: TailorInput): ResumeTailo
   };
   const coverLetter: CoverLetter = {
     greeting: str(c.greeting) || "Dear Hiring Manager,",
-    body: strArr(c.body),
+    body: toParagraphs(c.body),
     closing: str(c.closing) || "Sincerely,",
     signature: str(c.signature) || resume.name,
   };
@@ -140,6 +142,20 @@ function strArr(v: unknown): string[] {
   return Array.isArray(v)
     ? v.filter((s): s is string => typeof s === "string" && s.trim().length > 0).map((s) => s.trim())
     : [];
+}
+
+/**
+ * Cover-letter body coercion. The model sometimes returns one big string instead
+ * of the requested string[] — strArr would drop that to [] (empty letter). Accept
+ * a string OR array, and split any blank-line-separated block into paragraphs.
+ */
+function toParagraphs(v: unknown): string[] {
+  const blocks = Array.isArray(v) ? v : [v];
+  return blocks
+    .filter((s): s is string => typeof s === "string")
+    .flatMap((s) => s.split(/\n{2,}/))
+    .map((s) => s.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
 }
 
 // ---------- Offline fallback ----------
